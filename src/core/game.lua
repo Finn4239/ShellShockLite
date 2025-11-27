@@ -3,3 +3,4 @@
 --- Created by finno.
 --- DateTime: 26.11.2025 18:55
 ---
+print("Loading game core...")
