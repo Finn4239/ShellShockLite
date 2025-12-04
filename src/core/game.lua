@@ -1,15 +1,18 @@
 -- START-Coordinates
-x = 0
+x = 10
 y = 40
 -- constants
 PLAYER_SPRITE = 1
 BOTTOM_SPRITE = 4
+BORDER_LEFT_SPRITE = 6
+BORDER_RIGHT_SPRITE = 8
 
 function _draw()
     cls(5)
-
     map()
     spr(PLAYER_SPRITE, x, y)
+    spr(BORDER_LEFT_SPRITE,0,40)
+    spr(BORDER_RIGHT_SPRITE,125, 96)
     print("x="..x.." y="..y, 0, 0, 7) --debug output
 end
 
@@ -27,6 +30,7 @@ function _update()
         x = lx
         y = ly
     end
+
 end
 
 function isObstacle()
