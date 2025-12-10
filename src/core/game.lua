@@ -1,5 +1,5 @@
 -- Start-coordinates
-x = 0
+x = 8
 y = 40
 -- Velocity
 velocity_y = 0
@@ -8,8 +8,7 @@ GRAVITY = 0.3
 MAX_FALL_SPEED = 3
 -- Sprite indices
 PLAYER_SPRITE = 1
-BORDER_LEFT_SPRITE = 6
-BORDER_RIGHT_SPRITE = 8
+BORDER_SPRITE = 0
 
 function math_sign(a)
     if a < 0 and -1 then
@@ -30,10 +29,10 @@ function absolute_value(a) -- makes integer-/double-value positive
 end
 
 function is_solid_at_pixel(px, py)
-    local tx = flr(px / 8)
-    local ty = flr(py / 8)
+    local tank_x = flr(px / 8)
+    local tank_y = flr(py / 8)
 
-    return fget(mget(tx, ty), 0)
+    return fget(mget(tank_x, tank_y), 0)
 end
 
 function calculate_vertical_velocity()
@@ -70,6 +69,7 @@ function apply_horizontal()
 
     if btn(0) then left = 1 else left = 0 end
     if btn(1) then right = 1 else right = 0 end
+
     x_direction = right - left
 
     if x_direction ~= 0 then
@@ -94,8 +94,7 @@ end
 function _draw()
     cls(5)
     map()
-    spr(BORDER_LEFT_SPRITE,0,40)
-    spr(BORDER_RIGHT_SPRITE,125, 96)
+    spr(BORDER_SPRITE,0,40)
     spr(PLAYER_SPRITE, x, y)
     print("x="..x.." y="..y, 0, 0, 7)
 end
