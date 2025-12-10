@@ -21,16 +21,14 @@ function math_sign(a)
 end
 
 function absolute_value(a) -- makes integer-/double-value positive
-    if a < 0 then
-        return -a
-    end
+    if a < 0 then return -a end
 
     return a
 end
 
-function is_solid_at_pixel(px, py)
-    local tank_x = flr(px / 8)
-    local tank_y = flr(py / 8)
+function is_solid_at_pixel(player_x, player_y)
+    local tank_x = flr(player_x / 8)
+    local tank_y = flr(player_y / 8)
 
     return fget(mget(tank_x, tank_y), 0)
 end
