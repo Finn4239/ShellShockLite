@@ -10,7 +10,7 @@ MAX_FALL_SPEED = 3
 PLAYER_SPRITE = 1
 BORDER_SPRITE = 0
 
-function math_sign(a)
+function getVerticalDirection(a)
     if a < 0 and -1 then
         return -1 -- move up
     elseif a > 0 then
@@ -20,38 +20,36 @@ function math_sign(a)
     end
 end
 
-function absolute_value(a) -- makes integer-/double-value positive
+function absoluteValue(a) -- makes integer-/double-value positive
     if a < 0 then return -a end
 
     return a
 end
 
-function is_solid_at_pixel(player_x, player_y)
+function collisionAtPixel(player_x, player_y)
     local tank_x = flr(player_x / 8)
     local tank_y = flr(player_y / 8)
 
     return fget(mget(tank_x, tank_y), 0)
 end
 
-function calculate_vertical_velocity()
+function calculateVerticalVelocity()
     velocity_y = velocity_y + GRAVITY
     if velocity_y > MAX_FALL_SPEED then
     velocity_y = MAX_FALL_SPEED
     end
 end
 
-function apply_gravity()
-    local y_direction = math_sign(velocity_y)
-    local amount_of_pixels = flr(absolute_value(velocity_y))
+function applyVerticalMovement()
+    local y_direction = getVerticalDirection(velocity_y)
+    local amount_of_pixels = flr(absoluteValue(velocity_y))
     local sprite_width = 8
 
     for i = 1, amount_of_pixels do
         local left_edge = x
         local right_edge = x + sprite_width - 1
-        local is_left_in_air = not is_solid_at_pixel(left_edge, y + 8 * y_direction)
-        local is_right_in_air = not is_solid_at_pixel(right_edge, y + 8 * y_direction)
 
-        if is_left_in_air and is_right_in_air then
+        if isObjectInAir(left_edge, y_direction) and isObjectInAir(right_edge, y_direction) then
             y = y + y_direction
         else
             velocity_y = 0
@@ -60,7 +58,11 @@ function apply_gravity()
     end
 end
 
-function apply_horizontal()
+function isObjectInAir(edge, y_direction)
+    return not collisionAtPixel(edge, y + 8 * y_direction)
+end
+
+function applyHorizontalMovement()
     local x_direction = 0
     local left = 0
     local right = 0
@@ -72,11 +74,11 @@ function apply_horizontal()
 
     if x_direction ~= 0 then
         if x_direction > 0 then -- right
-            if not is_solid_at_pixel(x + x_direction *8, y+4) then
+            if not collisionAtPixel(x + x_direction *8, y+4) then
                 x = x + x_direction
             end
         else --left
-            if not is_solid_at_pixel(x + x_direction, y+4) then
+            if not collisionAtPixel(x + x_direction, y+4) then
                 x = x + x_direction
             end
         end
@@ -84,9 +86,9 @@ function apply_horizontal()
 end
 
 function _update()
-    calculate_vertical_velocity()
-    apply_gravity()
-    apply_horizontal()
+    calculateVerticalVelocity()
+    applyVerticalMovement()
+    applyHorizontalMovement()
 end
 
 function _draw()
