@@ -26,7 +26,7 @@ function absoluteValue(a) -- makes integer-/double-value positive
     return a
 end
 
-function collisionAtPixel(player_x, player_y)
+function collisionAtPosition(player_x, player_y)
     local tank_x = flr(player_x / 8)
     local tank_y = flr(player_y / 8)
 
@@ -59,7 +59,7 @@ function applyVerticalMovement()
 end
 
 function isObjectInAir(edge, y_direction)
-    return not collisionAtPixel(edge, y + 8 * y_direction)
+    return not collisionAtPosition(edge, y + 8 * y_direction)
 end
 
 function applyHorizontalMovement()
@@ -74,11 +74,11 @@ function applyHorizontalMovement()
 
     if x_direction ~= 0 then
         if x_direction > 0 then -- right
-            if not collisionAtPixel(x + x_direction *8, y+4) then
+            if not collisionAtPosition(x + x_direction *8, y+4) then
                 x = x + x_direction
             end
         else --left
-            if not collisionAtPixel(x + x_direction, y+4) then
+            if not collisionAtPosition(x + x_direction, y+4) then
                 x = x + x_direction
             end
         end
