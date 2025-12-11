@@ -38,24 +38,27 @@ function applyHorizontalMovement()
 
     if btn(0) then left = 1
         current_sprite = PLAYER_SPRITE_LEFT
-    else left = 0
-    end
+    else left = 0 end
+
     if btn(1) then right = 1
         current_sprite = PLAYER_SPRITE_RIGHT
-    else right = 0
-    end
+    else right = 0 end
 
     x_direction = right - left
 
     if x_direction ~= 0 then
-        if x_direction > 0 then -- right
-            if not collisionAtPosition(x + x_direction *8, y+4) then
-                x = x + x_direction
-            end
-        else --left
-            if not collisionAtPosition(x + x_direction, y+4) then
-                x = x + x_direction
-            end
+        movePlayerHorizontally(x_direction)
+    end
+end
+
+function movePlayerHorizontally(x_direction)
+    if x_direction > 0 then -- right
+        if not collisionAtPosition(x + x_direction *8, y+4) then
+            x = x + x_direction
+        end
+    else --left
+        if not collisionAtPosition(x + x_direction, y+4) then
+            x = x + x_direction
         end
     end
 end
