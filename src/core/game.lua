@@ -6,6 +6,9 @@ JUMP_HEIGHT = 4
 PLAYER_SPRITE_LEFT = 0
 PLAYER_SPRITE_RIGHT = 1
 BORDER_SPRITE = 6
+-- Screen dimensions
+SCREEN_WIDTH = 128
+SCREEN_HEIGHT = 128
 -- Start-coordinates
 x = 24
 y = 40
@@ -13,6 +16,12 @@ current_sprite = PLAYER_SPRITE_RIGHT
 can_jump = true
 -- Velocity
 velocity_y = 0
+-- Camera
+camera_x = 0
+camera_y = 0
+camera_threshold_x = 32  -- Wie nah der Spieler am Bildschirmrand sein muss, bevor die Kamera scrollt
+camera_threshold_y = 24
+
 
 function applyVerticalMovement()
     local y_direction = getVerticalDirection(velocity_y)
@@ -38,24 +47,27 @@ function applyHorizontalMovement()
 
     if btn(0) then left = 1
         current_sprite = PLAYER_SPRITE_LEFT
-    else left = 0
-    end
+    else left = 0 end
+
     if btn(1) then right = 1
         current_sprite = PLAYER_SPRITE_RIGHT
-    else right = 0
-    end
+    else right = 0 end
 
     x_direction = right - left
 
     if x_direction ~= 0 then
-        if x_direction > 0 then -- right
-            if not collisionAtPosition(x + x_direction *8, y+4) then
-                x = x + x_direction
-            end
-        else --left
-            if not collisionAtPosition(x + x_direction, y+4) then
-                x = x + x_direction
-            end
+        movePlayerHorizontally(x_direction)
+    end
+end
+
+function movePlayerHorizontally(x_direction)
+    if x_direction > 0 then -- right
+        if not collisionAtPosition(x + x_direction *8, y+4) then
+            x = x + x_direction
+        end
+    else --left
+        if not collisionAtPosition(x + x_direction, y+4) then
+            x = x + x_direction
         end
     end
 end
@@ -102,6 +114,29 @@ function isPlayerOnGround()
     return not isObjectInAir(left_edge, 1) or not isObjectInAir(right_edge, 1)
 end
 
+-- Camera-Functions
+function updateCamera()
+    -- Horizontales Scrolling
+    if x - camera_x > SCREEN_WIDTH/2 + camera_threshold_x then
+        camera_x = x - (SCREEN_WIDTH/2 + camera_threshold_x)
+    elseif x - camera_x < SCREEN_WIDTH/2 - camera_threshold_x then
+        camera_x = x - (SCREEN_WIDTH/2 - camera_threshold_x)
+    end
+
+    -- Vertikales Scrolling (optional, falls du es brauchst)
+    if y - camera_y > SCREEN_HEIGHT/2 + camera_threshold_y then
+        camera_y = y - (SCREEN_HEIGHT/2 + camera_threshold_y)
+    elseif y - camera_y < SCREEN_HEIGHT/2 - camera_threshold_y then
+        camera_y = y - (SCREEN_HEIGHT/2 - camera_threshold_y)
+    end
+
+    -- Kamera-Grenzen (damit die Kamera nicht außerhalb der Map scrollt)
+    camera_x = mid(0, camera_x, SCREEN_WIDTH * 8 - SCREEN_WIDTH)  -- Annahme: Map ist 128x64 Tiles groß
+    camera_y = mid(0, camera_y, SCREEN_HEIGHT * 8 - SCREEN_WIDTH)   -- Annahme: Map ist 128x64 Tiles groß
+end
+
+
+
 -- Pico-8 Standard Functions
 function _update()
     calculateVerticalVelocity(MAX_FALL_SPEED)
@@ -117,15 +152,17 @@ function _update()
 
     applyVerticalMovement()
     applyHorizontalMovement()
+    updateCamera()
 end
 
 function _draw()
-    cls(5)
     cls(1)
+    camera(camera_x, camera_y)
     map()
     spr(BORDER_SPRITE,8,40)
     spr(BORDER_SPRITE, 8, 32)
     spr(BORDER_SPRITE, 8, 26)
     spr(current_sprite, x, y)
+    camera(0,0)
     print("x="..x.." y="..y, 0, 0, 7)
 end
