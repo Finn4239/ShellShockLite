@@ -1,15 +1,72 @@
--- Start-coordinates
-x = 8
-y = 40
--- Velocity
-velocity_y = 0
 --constants
 GRAVITY = 0.3
 MAX_FALL_SPEED = 3
+MAX_JUMP_SPEED = 2
+JUMP_HEIGHT = 16
 -- Sprite indices
-PLAYER_SPRITE = 1
-BORDER_SPRITE = 0
+PLAYER_SPRITE_LEFT = 0
+PLAYER_SPRITE_RIGHT = 1
+BORDER_SPRITE = 6
+-- Start-coordinates
+x = 24
+y = 40
+current_sprite = PLAYER_SPRITE_RIGHT
+can_jump = true
+-- Velocity
+velocity_y = 0
 
+function applyVerticalMovement()
+    local y_direction = getVerticalDirection(velocity_y)
+    local amount_of_pixels = flr(absoluteValue(velocity_y))
+    local sprite_width = 8
+
+    if btn(2)then
+        y_direction = jump(y_direction) end
+
+    for i = 1, amount_of_pixels do
+        local left_edge = x
+        local right_edge = x + (sprite_width - 1)
+
+        if isObjectInAir(left_edge, y_direction) and isObjectInAir(right_edge, y_direction) then
+            y = y + y_direction
+        else
+            velocity_y = 0
+            break
+        end
+    end
+end
+
+function applyHorizontalMovement()
+    local x_direction = 0
+    local left = 0
+    local right = 0
+
+    if btn(0) then
+        left = 1
+        current_sprite = PLAYER_SPRITE_LEFT
+    else left = 0 end
+
+    if btn(1) then
+        right = 1
+        current_sprite = PLAYER_SPRITE_RIGHT
+    else right = 0 end
+
+    x_direction = right - left
+
+    if x_direction ~= 0 then
+        if x_direction > 0 then -- right
+            if not collisionAtPosition(x + x_direction *8, y+4) then
+                x = x + x_direction
+            end
+        else --left
+            if not collisionAtPosition(x + x_direction, y+4) then
+                x = x + x_direction
+            end
+        end
+    end
+end
+
+-- Help-Functions
 function getVerticalDirection(a)
     if a < 0 and -1 then
         return -1 -- move up
@@ -33,68 +90,60 @@ function collisionAtPosition(player_x, player_y)
     return fget(mget(tank_x, tank_y), 0)
 end
 
-function calculateVerticalVelocity()
+function calculateVerticalVelocity(max_speed)
     velocity_y = velocity_y + GRAVITY
     if velocity_y > MAX_FALL_SPEED then
-    velocity_y = MAX_FALL_SPEED
-    end
-end
-
-function applyVerticalMovement()
-    local y_direction = getVerticalDirection(velocity_y)
-    local amount_of_pixels = flr(absoluteValue(velocity_y))
-    local sprite_width = 8
-
-    for i = 1, amount_of_pixels do
-        local left_edge = x
-        local right_edge = x + sprite_width - 1
-
-        if isObjectInAir(left_edge, y_direction) and isObjectInAir(right_edge, y_direction) then
-            y = y + y_direction
-        else
-            velocity_y = 0
-            break
+        velocity_y = MAX_FALL_SPEED
+        if velocity_y > max_speed then
+            velocity_y = max_speed
         end
     end
 end
+
+function jump(y_direction)
+    if not isPlayerOnGround() then
+        can_jump = false
+
+        return y_direction
+    end
+
+    if can_jump then
+        y_direction = y_direction - JUMP_HEIGHT
+        can_jump = false
+    end
+
+    return y_direction
+    end
 
 function isObjectInAir(edge, y_direction)
     return not collisionAtPosition(edge, y + 8 * y_direction)
 end
 
-function applyHorizontalMovement()
-    local x_direction = 0
-    local left = 0
-    local right = 0
+function isPlayerOnGround()
+    local left_edge = x
+    local right_edge = x + 7
 
-    if btn(0) then left = 1 else left = 0 end
-    if btn(1) then right = 1 else right = 0 end
-
-    x_direction = right - left
-
-    if x_direction ~= 0 then
-        if x_direction > 0 then -- right
-            if not collisionAtPosition(x + x_direction *8, y+4) then
-                x = x + x_direction
-            end
-        else --left
-            if not collisionAtPosition(x + x_direction, y+4) then
-                x = x + x_direction
-            end
-        end
-    end
+    return not isObjectInAir(left_edge, 1) or not isObjectInAir(right_edge, 1)
 end
 
+-- Pico-8 Standard Functions
 function _update()
-    calculateVerticalVelocity()
+    calculateVerticalVelocity(MAX_FALL_SPEED)
+    if isPlayerOnGround() then
+        can_jump = true
+    end
+
     applyVerticalMovement()
     applyHorizontalMovement()
 end
 
 function _draw()
     cls(5)
+    cls(1)
     map()
-    spr(BORDER_SPRITE,0,40)
-    spr(PLAYER_SPRITE, x, y)
+    spr(BORDER_SPRITE,8,40)
+    spr(BORDER_SPRITE, 8, 32)
+    spr(BORDER_SPRITE, 8, 26)
+    spr(current_sprite, x, y)
     print("x="..x.." y="..y, 0, 0, 7)
 end
