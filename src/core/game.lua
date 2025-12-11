@@ -1,8 +1,7 @@
 --constants
 GRAVITY = 0.3
 MAX_FALL_SPEED = 3
-MAX_JUMP_SPEED = 2
-JUMP_HEIGHT = 16
+JUMP_HEIGHT = 4
 -- Sprite indices
 PLAYER_SPRITE_LEFT = 0
 PLAYER_SPRITE_RIGHT = 1
@@ -18,14 +17,10 @@ velocity_y = 0
 function applyVerticalMovement()
     local y_direction = getVerticalDirection(velocity_y)
     local amount_of_pixels = flr(absoluteValue(velocity_y))
-    local sprite_width = 8
-
-    if btn(2)then
-        y_direction = jump(y_direction) end
 
     for i = 1, amount_of_pixels do
         local left_edge = x
-        local right_edge = x + (sprite_width - 1)
+        local right_edge = x + 7 -- 7 because 8 sprite width (-1)
 
         if isObjectInAir(left_edge, y_direction) and isObjectInAir(right_edge, y_direction) then
             y = y + y_direction
@@ -41,15 +36,14 @@ function applyHorizontalMovement()
     local left = 0
     local right = 0
 
-    if btn(0) then
-        left = 1
+    if btn(0) then left = 1
         current_sprite = PLAYER_SPRITE_LEFT
-    else left = 0 end
-
-    if btn(1) then
-        right = 1
+    else left = 0
+    end
+    if btn(1) then right = 1
         current_sprite = PLAYER_SPRITE_RIGHT
-    else right = 0 end
+    else right = 0
+    end
 
     x_direction = right - left
 
@@ -68,7 +62,7 @@ end
 
 -- Help-Functions
 function getVerticalDirection(a)
-    if a < 0 and -1 then
+    if a < 0 then
         return -1 -- move up
     elseif a > 0 then
         return 1 -- move down
@@ -90,30 +84,12 @@ function collisionAtPosition(player_x, player_y)
     return fget(mget(tank_x, tank_y), 0)
 end
 
-function calculateVerticalVelocity(max_speed)
+function calculateVerticalVelocity()
     velocity_y = velocity_y + GRAVITY
     if velocity_y > MAX_FALL_SPEED then
         velocity_y = MAX_FALL_SPEED
-        if velocity_y > max_speed then
-            velocity_y = max_speed
-        end
     end
 end
-
-function jump(y_direction)
-    if not isPlayerOnGround() then
-        can_jump = false
-
-        return y_direction
-    end
-
-    if can_jump then
-        y_direction = y_direction - JUMP_HEIGHT
-        can_jump = false
-    end
-
-    return y_direction
-    end
 
 function isObjectInAir(edge, y_direction)
     return not collisionAtPosition(edge, y + 8 * y_direction)
@@ -129,6 +105,12 @@ end
 -- Pico-8 Standard Functions
 function _update()
     calculateVerticalVelocity(MAX_FALL_SPEED)
+
+    if btn(2) and isPlayerOnGround() and can_jump then
+        velocity_y = -JUMP_HEIGHT
+        can_jump = false
+    end
+
     if isPlayerOnGround() then
         can_jump = true
     end
