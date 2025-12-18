@@ -10,7 +10,6 @@ BORDER_SPRITE = 6
 x = 24
 y = 40
 current_sprite = PLAYER_SPRITE_RIGHT
-can_jump = true
 -- Velocity
 velocity_y = 0
 
@@ -111,11 +110,6 @@ function _update()
 
     if btn(2) and isPlayerOnGround()then
         velocity_y = -JUMP_HEIGHT
-        can_jump = false
-    end
-
-    if isPlayerOnGround() then
-        can_jump = true
     end
 
     applyVerticalMovement()
