@@ -109,7 +109,7 @@ end
 function _update()
     calculateVerticalVelocity(MAX_FALL_SPEED)
 
-    if btn(2) and isPlayerOnGround() and can_jump then
+    if btn(2) and isPlayerOnGround()then
         velocity_y = -JUMP_HEIGHT
         can_jump = false
     end
