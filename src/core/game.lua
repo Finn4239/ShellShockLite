@@ -13,7 +13,6 @@ SCREEN_HEIGHT = 128
 x = 24
 y = 40
 current_sprite = PLAYER_SPRITE_RIGHT
-can_jump = true
 -- Velocity
 velocity_y = 0
 -- Camera
@@ -141,13 +140,8 @@ end
 function _update()
     calculateVerticalVelocity(MAX_FALL_SPEED)
 
-    if btn(2) and isPlayerOnGround() and can_jump then
+    if btn(2) and isPlayerOnGround()then
         velocity_y = -JUMP_HEIGHT
-        can_jump = false
-    end
-
-    if isPlayerOnGround() then
-        can_jump = true
     end
 
     applyVerticalMovement()
