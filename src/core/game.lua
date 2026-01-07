@@ -6,6 +6,7 @@ JUMP_HEIGHT = 4
 PLAYER_SPRITE_LEFT = 0
 PLAYER_SPRITE_RIGHT = 1
 BORDER_SPRITE = 6
+SHOT_SPRITE = 16
 -- Screen dimensions
 SCREEN_WIDTH = 128
 SCREEN_HEIGHT = 128
@@ -20,6 +21,15 @@ camera_x = 0
 camera_y = 0
 camera_threshold_x = 32  -- Wie nah der Spieler am Bildschirmrand sein muss, bevor die Kamera scrollt
 camera_threshold_y = 24
+-- Shooting
+shots = {}  -- Tabelle für alle Schüsse
+shot_x = 0
+shot_y = 6
+shot_speed = 3
+can_shoot = true
+cooldown = 15 -- Cooldown in Frames (z. B. 15 Frames ≈ 0.25 Sekunden)
+
+cooldown_counter = 0 -- Zählt die Frames während des Cooldowns
 
 
 function applyVerticalMovement()
@@ -134,29 +144,102 @@ function updateCamera()
     camera_y = mid(0, camera_y, SCREEN_HEIGHT * 8 - SCREEN_WIDTH)   -- Annahme: Map ist 128x64 Tiles groß
 end
 
+function createShot(x, y, direction)
+    if not can_shoot then
+        return  -- Schießen nicht erlaubt, wenn Cooldown aktiv ist
+    end
 
+    local shot = {
+        x = x,
+        y = y,
+        direction = direction,
+        active = true
+    }
+    add(shots, shot)
+    can_shoot = false  -- Schießen deaktivieren
+    cooldown_counter = cooldown  -- Cooldown starten
+end
+
+function check_shot_collision(shot)
+    -- Prüfe, ob der Schuss auf ein Hindernis trifft
+    local tile_x = flr(shot.x / 8)
+    local tile_y = flr(shot.y / 8)
+    return fget(mget(tile_x, tile_y), 0)  -- Prüft, ob das Tile ein Hindernis ist
+end
+
+function update_shots()
+    for shot in all(shots) do
+        if shot.active then
+            shot.x = shot.x + shot_speed * shot.direction  -- Bewege den Schuss
+
+            -- Prüfe auf Kollisionserkennung
+            if check_shot_collision(shot) then
+                shot.active = false  -- Schuss deaktivieren, wenn er auf ein Hindernis trifft
+                can_shoot = true  -- Schießen wieder erlauben
+            end
+
+            -- Schuss deaktivieren, wenn er den Bildschirm verlässt
+            if shot.x < 0 or shot.x > 128 then
+                shot.active = false
+            end
+        end
+    end
+
+    -- Inaktive Schüsse entfernen
+    for i = #shots, 1, -1 do
+        if not shots[i].active then
+            del(shots, shots[i])
+        end
+    end
+end
 
 -- Pico-8 Standard Functions
 function _update()
     calculateVerticalVelocity(MAX_FALL_SPEED)
 
-    if btn(2) and isPlayerOnGround()then
+    if btnp(2) and isPlayerOnGround()then
         velocity_y = -JUMP_HEIGHT
     end
 
     applyVerticalMovement()
     applyHorizontalMovement()
     updateCamera()
+
+    -- Cooldown aktualisieren
+    if not can_shoot and cooldown_counter > 0 then
+        cooldown_counter = cooldown_counter - 1
+        if cooldown_counter == 0 then  -- Klammer hinzugefügt
+            can_shoot = true
+        end
+    end
+
+    -- Schuss abfeuern
+    if btnp(5) and can_shoot then  -- X-Taste
+        createShot(x + 8, y + 1, 1)  -- Schuss nach rechts
+    end
+
+    update_shots()  -- Schüsse aktualisieren
 end
 
 function _draw()
     cls(1)
     camera(camera_x, camera_y)
     map()
-    spr(BORDER_SPRITE,8,40)
+    spr(BORDER_SPRITE, 8, 40)
     spr(BORDER_SPRITE, 8, 32)
     spr(BORDER_SPRITE, 8, 26)
     spr(current_sprite, x, y)
+
+    -- Kamera zurücksetzen, um UI-Elemente fest zu zeichnen
+    camera(0, 0)
+
+    -- Zeichne Schüsse
+    for shot in all(shots) do
+        if shot.active then
+            spr(shot_sprite, shot.x, shot.y)
+        end
+    end
+
     camera(0,0)
     print("x="..x.." y="..y, 0, 0, 7)
 end
