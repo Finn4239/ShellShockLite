@@ -179,7 +179,7 @@ function update_shots()
             end
 
             -- Schuss deaktivieren, wenn er den Bildschirm verlässt
-            if shot.x < 0 or shot.x > 128 then
+            if shot.x < 0 or shot.x > 380 then
                 shot.active = false
             end
         end
