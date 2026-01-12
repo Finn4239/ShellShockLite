@@ -11,9 +11,6 @@ SHOT_SPRITE = 16
 SCREEN_WIDTH = 128
 SCREEN_HEIGHT = 128
 -- Start-coordinates
-x = 24
-y = 40
-current_sprite = PLAYER_SPRITE_RIGHT
 -- Velocity
 velocity_y = 0
 -- Camera
@@ -28,20 +25,35 @@ shot_y = 6
 shot_speed = 3
 can_shoot = true
 cooldown = 15 -- Cooldown in Frames (z. B. 15 Frames ≈ 0.25 Sekunden)
-
 cooldown_counter = 0 -- Zählt die Frames während des Cooldowns
 
+-- Game State
+game_state = "title" -- Possible states: "title", "playing", "game_over"
+-- Title Screen Variables
+title_y = -20 -- Initial Y position of the title
+title_speed = 1 -- Speed of the title sliding down
+
+player = {
+    x = 24,
+    y = 40,
+    current_sprite = PLAYER_SPRITE_RIGHT;
+    w = 8,
+    h = 8,
+    health = 200,
+    dx = 0, -- Player velocity X component
+    dy = 0  -- Player velocity Y component
+}
 
 function applyVerticalMovement()
     local y_direction = getVerticalDirection(velocity_y)
     local amount_of_pixels = flr(absoluteValue(velocity_y))
 
     for i = 1, amount_of_pixels do
-        local left_edge = x
-        local right_edge = x + 7 -- 7 because 8 sprite width (-1)
+        local left_edge = player.x
+        local right_edge = player.x + 7 -- 7 because 8 sprite width (-1)
 
         if isObjectInAir(left_edge, y_direction) and isObjectInAir(right_edge, y_direction) then
-            y = y + y_direction
+            player.y = player.y + y_direction
         else
             velocity_y = 0
             break
@@ -55,11 +67,11 @@ function applyHorizontalMovement()
     local right = 0
 
     if btn(0) then left = 1
-        current_sprite = PLAYER_SPRITE_LEFT
+        player.current_sprite = PLAYER_SPRITE_LEFT
     else left = 0 end
 
     if btn(1) then right = 1
-        current_sprite = PLAYER_SPRITE_RIGHT
+        player.current_sprite = PLAYER_SPRITE_RIGHT
     else right = 0 end
 
     x_direction = right - left
@@ -71,12 +83,12 @@ end
 
 function movePlayerHorizontally(x_direction)
     if x_direction > 0 then -- right
-        if not collisionAtPosition(x + x_direction *8, y+4) then
-            x = x + x_direction
+        if not collisionAtPosition(player.x + x_direction * 8, player.y + 4) then
+            player.x = player.x + x_direction
         end
     else --left
-        if not collisionAtPosition(x + x_direction, y+4) then
-            x = x + x_direction
+        if not collisionAtPosition(player.x + x_direction, player.y + 4) then
+            player.x = player.x + x_direction
         end
     end
 end
@@ -113,12 +125,12 @@ function calculateVerticalVelocity()
 end
 
 function isObjectInAir(edge, y_direction)
-    return not collisionAtPosition(edge, y + 8 * y_direction)
+    return not collisionAtPosition(edge, player.y + 8 * y_direction)
 end
 
 function isPlayerOnGround()
-    local left_edge = x
-    local right_edge = x + 7
+    local left_edge = player.x
+    local right_edge = player.x + 7
 
     return not isObjectInAir(left_edge, 1) or not isObjectInAir(right_edge, 1)
 end
@@ -126,17 +138,17 @@ end
 -- Camera-Functions
 function updateCamera()
     -- Horizontales Scrolling
-    if x - camera_x > SCREEN_WIDTH/2 + camera_threshold_x then
-        camera_x = x - (SCREEN_WIDTH/2 + camera_threshold_x)
-    elseif x - camera_x < SCREEN_WIDTH/2 - camera_threshold_x then
-        camera_x = x - (SCREEN_WIDTH/2 - camera_threshold_x)
+    if player.x - camera_x > SCREEN_WIDTH/2 + camera_threshold_x then
+        camera_x = player.x - (SCREEN_WIDTH/2 + camera_threshold_x)
+    elseif player.x - camera_x < SCREEN_WIDTH/2 - camera_threshold_x then
+        camera_x = player.x - (SCREEN_WIDTH/2 - camera_threshold_x)
     end
 
     -- Vertikales Scrolling (optional, falls du es brauchst)
-    if y - camera_y > SCREEN_HEIGHT/2 + camera_threshold_y then
-        camera_y = y - (SCREEN_HEIGHT/2 + camera_threshold_y)
-    elseif y - camera_y < SCREEN_HEIGHT/2 - camera_threshold_y then
-        camera_y = y - (SCREEN_HEIGHT/2 - camera_threshold_y)
+    if player.y - camera_y > SCREEN_HEIGHT/2 + camera_threshold_y then
+        camera_y = player.y - (SCREEN_HEIGHT/2 + camera_threshold_y)
+    elseif player.y - camera_y < SCREEN_HEIGHT/2 - camera_threshold_y then
+        camera_y = player.y - (SCREEN_HEIGHT/2 - camera_threshold_y)
     end
 
     -- Kamera-Grenzen (damit die Kamera nicht außerhalb der Map scrollt)
@@ -195,6 +207,17 @@ end
 
 -- Pico-8 Standard Functions
 function _update()
+    if game_state == "title" then
+        -- Slide the title down
+        if title_y < 40 then
+            title_y = title_y + title_speed
+        end
+
+        -- Start the game when any button is pressed
+        if btnp(4) or btnp(5) or btnp(0) or btnp(1) or btnp(2) or btnp(3) then
+            game_state = "playing"
+        end
+    end
     calculateVerticalVelocity(MAX_FALL_SPEED)
 
     if btnp(2) and isPlayerOnGround()then
@@ -215,20 +238,37 @@ function _update()
 
     -- Schuss abfeuern
     if btnp(5) and can_shoot then  -- X-Taste
-        createShot(x + 8, y + 1, 1)  -- Schuss nach rechts
+        createShot(player.x + 8, player.y + 1, 1)  -- Schuss nach rechts
     end
 
-    update_shots()  -- Schüsse aktualisieren
+    update_shots()
 end
 
 function _draw()
+    cls()
+
+    if game_state == "title" then
+        -- Draw the title
+        print("ShellShockLite", 46, title_y, 7)
+
+        -- Draw the prompt to start
+        if title_y >= 40 then
+            print("Press c to begin", 20, 80, 7)
+        end
+    elseif game_state == "playing" then
+        draw_game()
+    end
+
+end
+
+function draw_game()
     cls(1)
     camera(camera_x, camera_y)
     map()
     spr(BORDER_SPRITE, 8, 40)
     spr(BORDER_SPRITE, 8, 32)
     spr(BORDER_SPRITE, 8, 26)
-    spr(current_sprite, x, y)
+    spr(player.current_sprite, player.x, player.y)
 
     -- Kamera zurücksetzen, um UI-Elemente fest zu zeichnen
     camera(0, 0)
@@ -241,5 +281,5 @@ function _draw()
     end
 
     camera(0,0)
-    print("x="..x.." y="..y, 0, 0, 7)
+    print("x="..player.x.." y="..player.y, 0, 0, 7)
 end
