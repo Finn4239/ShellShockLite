@@ -249,14 +249,23 @@ function _draw()
 
     if game_state == "title" then
         -- Draw the title
-        print("ShellShockLite", 46, title_y, 7)
+        draw_long_sprite(SCREEN_WIDTH/4, title_y)
+        --print("ShellShockLite", 46, title_y, 7)
 
         -- Draw the prompt to start
         if title_y >= 40 then
-            print("Press c to begin", 20, 80, 7)
+            print("Press c to begin", (SCREEN_WIDTH/4)-2, 80, 7)
         end
     elseif game_state == "playing" then
         draw_game()
+    end
+
+end
+
+function draw_long_sprite(x, y)
+    local sprite = 64
+    for i = 0, 6 do
+        spr(sprite + i, x + (i*8), y)
     end
 
 end
@@ -276,7 +285,7 @@ function draw_game()
     -- Zeichne Schüsse
     for shot in all(shots) do
         if shot.active then
-            spr(shot_sprite, shot.x, shot.y)
+            spr(16, shot.x-3, shot.y-1)
         end
     end
 
