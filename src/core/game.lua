@@ -157,19 +157,21 @@ function updateCamera()
 end
 
 function createShot(x, y, direction)
-    if not can_shoot then
-        return  -- Schießen nicht erlaubt, wenn Cooldown aktiv ist
-    end
+    if not can_shoot then return end
 
     local shot = {
         x = x,
         y = y,
         direction = direction,
-        active = true
+        active = true,
+        time = 0,          -- Zeit für die Parabelberechnung
+        max_time = 20,    -- Maximale Flugzeit (anpassbar für Reichweite)
+        height = 5,      -- Maximale Höhe der Parabel
+        speed = 2         -- Horizontale Geschwindigkeit
     }
     add(shots, shot)
-    can_shoot = false  -- Schießen deaktivieren
-    cooldown_counter = cooldown  -- Cooldown starten
+    can_shoot = false
+    cooldown_counter = cooldown
 end
 
 function check_shot_collision(shot)
@@ -179,6 +181,25 @@ function check_shot_collision(shot)
     return fget(mget(tile_x, tile_y), 0)  -- Prüft, ob das Tile ein Hindernis ist
 end
 
+function update_parabolic_shot(shot)
+    shot.time = shot.time + 1
+
+    -- Parabelberechnung: y = -a*(t - max_time/2)^2 + height
+    local t = shot.time / shot.max_time
+    local y_offset = -4 * shot.height * (t - 0.5)^2 + shot.height
+
+    shot.x = shot.x + shot.speed * shot.direction
+    shot.y = shot.y - y_offset  -- y_offset ist positiv nach oben
+
+    --[[ Kollisionsprüfung
+    if check_shot_collision(shot) or shot.time >= shot.max_time then
+        shot.active = false
+        can_shoot = true
+    end --]]
+
+end
+
+--[[
 function update_shots()
     for shot in all(shots) do
         if shot.active then
@@ -204,6 +225,23 @@ function update_shots()
         end
     end
 end
+--]]
+
+function update_shots()
+    for shot in all(shots) do
+        if shot.active then
+            update_parabolic_shot(shot)
+        end
+    end
+
+    -- Inaktive Schüsse entfernen
+    for i = #shots, 1, -1 do
+        if not shots[i].active then
+            del(shots, shots[i])
+        end
+    end
+end
+
 
 -- Pico-8 Standard Functions
 function _update()
@@ -237,8 +275,11 @@ function _update()
     end
 
     -- Schuss abfeuern
-    if btnp(5) and can_shoot then  -- X-Taste
-        createShot(player.x + 8, player.y + 1, 1)  -- Schuss nach rechts
+    --if btnp(5) and can_shoot then  -- X-Taste
+      --  createShot(player.x + 8, player.y + 1, 1)  -- Schuss nach rechts
+    -- end
+    if btnp(5) and can_shoot then
+        createShot(player.x + 8, player.y, 1)  -- Richtung 1 = rechts
     end
 
     update_shots()
