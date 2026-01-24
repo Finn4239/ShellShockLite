@@ -29,6 +29,8 @@ cooldown_counter = 0 -- Zählt die Frames während des Cooldowns
 
 -- Game State
 game_state = "title" -- Possible states: "title", "playing", "game_over"
+-- Player Mode
+player_mode = "driving" -- Possible modes: "driving", "shooting"
 -- Title Screen Variables
 title_y = -20 -- Initial Y position of the title
 title_speed = 1 -- Speed of the title sliding down
@@ -165,8 +167,8 @@ function createShot(x, y, direction)
         direction = direction,
         active = true,
         time = 0,          -- Zeit für die Parabelberechnung
-        max_time = 20,    -- Maximale Flugzeit (anpassbar für Reichweite)
-        height = 5,      -- Maximale Höhe der Parabel
+        max_time = 10,    -- Maximale Flugzeit (anpassbar für Reichweite)
+        height = 3,      -- Maximale Höhe der Parabel
         speed = 2         -- Horizontale Geschwindigkeit
     }
     add(shots, shot)
@@ -262,8 +264,11 @@ function _update()
         velocity_y = -JUMP_HEIGHT
     end
 
-    applyVerticalMovement()
-    applyHorizontalMovement()
+    if player_mode == "driving" then
+         applyVerticalMovement()
+         applyHorizontalMovement()
+    end
+
     updateCamera()
 
     -- Cooldown aktualisieren
@@ -279,7 +284,12 @@ function _update()
       --  createShot(player.x + 8, player.y + 1, 1)  -- Schuss nach rechts
     -- end
     if btnp(5) and can_shoot then
-        createShot(player.x + 8, player.y, 1)  -- Richtung 1 = rechts
+        player_mode = "shooting"
+        if player.current_sprite == PLAYER_SPRITE_RIGHT then
+            createShot(player.x + 8, player.y, 1)  -- Richtung 1 = rechts
+        else
+            createShot(player.x + 8, player.y, -1)  -- Richtung -1 = links
+        end
     end
 
     update_shots()
