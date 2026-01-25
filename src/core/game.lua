@@ -16,15 +16,15 @@ velocity_y = 0
 -- Camera
 camera_x = 0
 camera_y = 0
-camera_threshold_x = 32  -- Wie nah der Spieler am Bildschirmrand sein muss, bevor die Kamera scrollt
-camera_threshold_y = 24
+camera_threshold_x = 1  -- Wie nah der Spieler am Bildschirmrand sein muss, bevor die Kamera scrollt
+camera_threshold_y = 25
 -- Shooting
 shots = {}  -- Tabelle für alle Schüsse
 shot_x = 0
 shot_y = 6
 shot_speed = 3
 can_shoot = true
-cooldown = 15 -- Cooldown in Frames (z. B. 15 Frames ≈ 0.25 Sekunden)
+cooldown = 15 -- Cooldown in Frames (z.B. 15 Frames ≈ 0.25 Sekunden)
 cooldown_counter = 0 -- Zählt die Frames während des Cooldowns
 
 -- Game State
@@ -42,8 +42,8 @@ player = {
     w = 8,
     h = 8,
     health = 200,
-    dx = 0, -- Player velocity X component
-    dy = 0  -- Player velocity Y component
+    dx = 0, -- Player velocity X
+    dy = 0  -- Player velocity Y
 }
 
 function applyVerticalMovement()
@@ -254,7 +254,7 @@ function _update()
         end
 
         -- Start the game when any button is pressed
-        if btnp(4) or btnp(5) or btnp(0) or btnp(1) or btnp(2) or btnp(3) then
+        if btnp(4) then
             game_state = "playing"
         end
     end
