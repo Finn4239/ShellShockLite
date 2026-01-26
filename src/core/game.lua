@@ -13,7 +13,6 @@ MAP_HEIGHT = 30*8
 -- Screen dimensions
 SCREEN_WIDTH = 128
 SCREEN_HEIGHT = 128
--- Start-coordinates
 -- Velocity
 velocity_y = 0
 -- Camera
@@ -24,7 +23,7 @@ camera_threshold_y = 25
 -- Shooting
 shots = {}  -- Tabelle für alle Schüsse
 can_shoot = true
-shot_start_coords = 0
+shot_start_coords = 0 --only for debug info
 -- Game State
 game_state = "title" -- Possible states: "title", "playing", "game_over"
 -- Player Mode
@@ -44,15 +43,16 @@ player = {
     dy = 0  -- Player velocity Y
 }
 
-function applyVerticalMovement()
-    local y_direction = getVerticalDirection(velocity_y)
-    local amount_of_pixels = flr(absoluteValue(velocity_y))
+-- Movement-Functions
+function apply_vertical_movement()
+    local y_direction = get_vertical_direction(velocity_y)
+    local amount_of_pixels = flr(absolute_value(velocity_y))
 
     for i = 1, amount_of_pixels do
         local left_edge = player.x
         local right_edge = player.x + 7 -- 7 because 8 sprite width (-1)
 
-        if isObjectInAir(left_edge, y_direction) and isObjectInAir(right_edge, y_direction) then
+        if is_object_in_air(left_edge, y_direction) and is_object_in_air(right_edge, y_direction) then
             player.y = player.y + y_direction
         else
             velocity_y = 0
@@ -61,7 +61,7 @@ function applyVerticalMovement()
     end
 end
 
-function applyHorizontalMovement()
+function apply_horizontal_movement()
     local x_direction = 0
     local left = 0
     local right = 0
@@ -77,66 +77,24 @@ function applyHorizontalMovement()
     x_direction = right - left
 
     if x_direction ~= 0 then
-        movePlayerHorizontally(x_direction)
+        move_player_horizontally(x_direction)
     end
 end
 
-function movePlayerHorizontally(x_direction)
+function move_player_horizontally(x_direction)
     if x_direction > 0 then -- right
-        if not collisionAtPosition(player.x + x_direction * 8, player.y + 4) then
+        if not collision_at_position(player.x + x_direction * 8, player.y + 4) then
             player.x += x_direction
         end
     else --left
-        if not collisionAtPosition(player.x + x_direction, player.y + 4) then
+        if not collision_at_position(player.x + x_direction, player.y + 4) then
             player.x += x_direction
         end
     end
 end
 
--- Help-Functions
-function getVerticalDirection(a)
-    if a < 0 then
-        return -1 -- move up
-    elseif a > 0 then
-        return 1 -- move down
-    else
-        return 0 -- no movement
-    end
-end
-
-function absoluteValue(a) -- makes integer-/double-value positive
-    if a < 0 then return -a end
-
-    return a
-end
-
-function collisionAtPosition(player_x, player_y)
-    local tank_x = flr(player_x / 8)
-    local tank_y = flr(player_y / 8)
-
-    return fget(mget(tank_x, tank_y), 0)
-end
-
-function calculateVerticalVelocity()
-    velocity_y += GRAVITY
-    if velocity_y > MAX_FALL_SPEED then
-        velocity_y = MAX_FALL_SPEED
-    end
-end
-
-function isObjectInAir(edge, y_direction)
-    return not collisionAtPosition(edge, player.y + 8 * y_direction)
-end
-
-function isPlayerOnGround()
-    local left_edge = player.x
-    local right_edge = player.x + 7
-
-    return not isObjectInAir(left_edge, 1) or not isObjectInAir(right_edge, 1)
-end
-
 -- Camera-Functions
-function updateCamera()
+function update_camera()
     -- Horizontales Scrolling
     if player.x - camera_x > SCREEN_WIDTH/2 + camera_threshold_x then
         camera_x = player.x - (SCREEN_WIDTH/2 + camera_threshold_x)
@@ -156,7 +114,8 @@ function updateCamera()
     camera_y = mid(0, camera_y, SCREEN_HEIGHT * 8 - SCREEN_WIDTH)
 end
 
-function createShot(x, y, direction)
+-- Shooting-Functions
+function create_shot(x, y, direction)
     local shot = {
         x = x,
         y = y,
@@ -170,42 +129,6 @@ function createShot(x, y, direction)
     shot_start_coords = x
     add(shots, shot)
 end
-
-
-function check_shot_collision(shot)
-    -- Prüfe, ob der Schuss auf ein Hindernis trifft
-    local tile_x = flr(shot.x / 8)
-    local tile_y = flr(shot.y / 8)
-    return fget(mget(tile_x, tile_y), 0)  -- Prüft, ob das Tile ein Hindernis ist
-end
-
-function update_parabolic_shot(shot)
-    shot.time = shot.time + 1
-
-    local t = shot.time / shot.max_time
-    local y_offset = -4 * shot.height * (t - 0.5)^2 + shot.height
-
-    shot.x = shot.x + shot.speed * shot.direction
-    shot.y = shot.y - y_offset
-
-    if check_shot_collision(shot) then
-        shot.active = false
-    end
-
-end
-
-function update_normal_shot()
-    for shot in all(shots) do
-
-        if shot.active then
-            shot.x = (shot.x + shot.speed) * shot.direction  -- Bewege den Schuss
-        end
-        if check_shot_collision(shot) then
-            shot.active = false
-        end
-    end
-end
-
 
 function update_shots()
     local active_shots = 0
@@ -230,13 +153,6 @@ function update_shots()
     enable_driving_mode()
 end
 
-function enable_driving_mode()
-    if player_mode == "driving" then
-        applyVerticalMovement()
-        applyHorizontalMovement()
-    end
-end
-
 -- Pico-8 Standard Functions
 function _update()
     if game_state == "title" then
@@ -250,35 +166,33 @@ function _update()
             game_state = "playing"
         end
     end
-    calculateVerticalVelocity(MAX_FALL_SPEED)
+    calculate_vertical_velocity(MAX_FALL_SPEED)
 
     -- Springen
-    if btnp(2) and isPlayerOnGround()then
+    if btnp(2) and is_player_on_ground() then
         velocity_y = -JUMP_HEIGHT
         sfx(02)
     end
 
     enable_driving_mode()
-    if btnp(5) and can_shoot and isPlayerOnGround() then
+    if btnp(5) and can_shoot and is_player_on_ground() then
         --player_mode = "shooting"
         if player.current_sprite == PLAYER_SPRITE_RIGHT then
-            createShot(player.x + 8, player.y, 1)  -- Richtung 1 = rechts
+            create_shot(player.x + 8, player.y, 1)  -- Richtung 1 = rechts
         else
-            createShot(player.x + 8, player.y, -1)  -- Richtung -1 = links
+            create_shot(player.x + 8, player.y, -1)  -- Richtung -1 = links
         end
         sfx(01)
     end
 
     update_shots()
 
-    updateCamera()
+    update_camera()
 
     -- Schuss abfeuern
     --if btnp(5) and can_shoot then  -- X-Taste
-      --  createShot(player.x + 8, player.y + 1, 1)  -- Schuss nach rechts
+    --  createShot(player.x + 8, player.y + 1, 1)  -- Schuss nach rechts
     -- end
-
-
 end
 
 function _draw()
@@ -288,6 +202,87 @@ function _draw()
         draw_title_screen()
     elseif game_state == "playing" then
         draw_game()
+    end
+end
+
+-- Help-Functions
+function get_vertical_direction(a)
+    if a < 0 then
+        return -1 -- move up
+    elseif a > 0 then
+        return 1 -- move down
+    else
+        return 0 -- no movement
+    end
+end
+
+function absolute_value(a) -- makes integer-/double-value positive
+    if a < 0 then return -a end
+
+    return a
+end
+
+function collision_at_position(player_x, player_y)
+    local tank_x = flr(player_x / 8)
+    local tank_y = flr(player_y / 8)
+
+    return fget(mget(tank_x, tank_y), 0)
+end
+
+function calculate_vertical_velocity()
+    velocity_y += GRAVITY
+    if velocity_y > MAX_FALL_SPEED then
+    velocity_y = MAX_FALL_SPEED
+    end
+end
+
+function is_object_in_air(edge, y_direction)
+    return not collision_at_position(edge, player.y + 8 * y_direction)
+end
+
+function is_player_on_ground()
+    local left_edge = player.x
+    local right_edge = player.x + 7
+
+    return not is_object_in_air(left_edge, 1) or not is_object_in_air(right_edge, 1)
+end
+
+function enable_driving_mode()
+    if player_mode == "driving" then
+        apply_vertical_movement()
+        apply_horizontal_movement()
+    end
+end
+
+function check_shot_collision(shot)
+    -- Prüfe, ob der Schuss auf ein Hindernis trifft
+    local tile_x = flr(shot.x / 8)
+    local tile_y = flr(shot.y / 8)
+    return fget(mget(tile_x, tile_y), 0)  -- Prüft, ob das Tile ein Hindernis ist
+end
+
+function update_parabolic_shot(shot)
+    shot.time = shot.time + 1
+
+    local t = shot.time / shot.max_time
+    local y_offset = -4 * shot.height * (t - 0.5)^2 + shot.height
+
+    shot.x = shot.x + shot.speed * shot.direction
+    shot.y = shot.y - y_offset
+
+    if check_shot_collision(shot) then
+        shot.active = false
+    end
+end
+
+function update_normal_shot()
+    for shot in all(shots) do
+        if shot.active then
+            shot.x = (shot.x + shot.speed) * shot.direction  -- Bewege den Schuss
+        end
+        if check_shot_collision(shot) then
+            shot.active = false
+        end
     end
 end
 
@@ -307,7 +302,6 @@ function draw_long_sprite(x, y)
     for i = 0, 6 do
         spr(sprite + i, x + (i*8), y)
     end
-
 end
 
 function draw_game()
@@ -332,4 +326,3 @@ function draw_game()
     print("Shoot_x startpoint: " .. shot_start_coords, 0, 7, 7)
     print("Player Mode: " .. player_mode, 0, 14, 7)
 end
-
