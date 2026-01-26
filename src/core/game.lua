@@ -7,6 +7,9 @@ PLAYER_SPRITE_LEFT = 0
 PLAYER_SPRITE_RIGHT = 1
 BORDER_SPRITE = 6
 SHOT_SPRITE = 16
+-- Map dimensions
+MAP_WIDTH = 128*8
+MAP_HEIGHT = 30*8
 -- Screen dimensions
 SCREEN_WIDTH = 128
 SCREEN_HEIGHT = 128
@@ -20,13 +23,8 @@ camera_threshold_x = 1  -- Wie nah der Spieler am Bildschirmrand sein muss, bevo
 camera_threshold_y = 25
 -- Shooting
 shots = {}  -- Tabelle für alle Schüsse
-shot_x = 0
-shot_y = 6
-shot_speed = 3
 can_shoot = true
-cooldown = 15 -- Cooldown in Frames (z.B. 15 Frames ≈ 0.25 Sekunden)
-cooldown_counter = 0 -- Zählt die Frames während des Cooldowns
-
+shot_start_coords = 0
 -- Game State
 game_state = "title" -- Possible states: "title", "playing", "game_over"
 -- Player Mode
@@ -86,11 +84,11 @@ end
 function movePlayerHorizontally(x_direction)
     if x_direction > 0 then -- right
         if not collisionAtPosition(player.x + x_direction * 8, player.y + 4) then
-            player.x = player.x + x_direction
+            player.x += x_direction
         end
     else --left
         if not collisionAtPosition(player.x + x_direction, player.y + 4) then
-            player.x = player.x + x_direction
+            player.x += x_direction
         end
     end
 end
@@ -120,7 +118,7 @@ function collisionAtPosition(player_x, player_y)
 end
 
 function calculateVerticalVelocity()
-    velocity_y = velocity_y + GRAVITY
+    velocity_y += GRAVITY
     if velocity_y > MAX_FALL_SPEED then
         velocity_y = MAX_FALL_SPEED
     end
@@ -146,7 +144,7 @@ function updateCamera()
         camera_x = player.x - (SCREEN_WIDTH/2 - camera_threshold_x)
     end
 
-    -- Vertikales Scrolling (optional, falls du es brauchst)
+    -- Vertikales Scrolling
     if player.y - camera_y > SCREEN_HEIGHT/2 + camera_threshold_y then
         camera_y = player.y - (SCREEN_HEIGHT/2 + camera_threshold_y)
     elseif player.y - camera_y < SCREEN_HEIGHT/2 - camera_threshold_y then
@@ -154,27 +152,25 @@ function updateCamera()
     end
 
     -- Kamera-Grenzen (damit die Kamera nicht außerhalb der Map scrollt)
-    camera_x = mid(0, camera_x, SCREEN_WIDTH * 8 - SCREEN_WIDTH)  -- Annahme: Map ist 128x64 Tiles groß
-    camera_y = mid(0, camera_y, SCREEN_HEIGHT * 8 - SCREEN_WIDTH)   -- Annahme: Map ist 128x64 Tiles groß
+    camera_x = mid(0, camera_x, SCREEN_WIDTH * 8 - SCREEN_WIDTH)
+    camera_y = mid(0, camera_y, SCREEN_HEIGHT * 8 - SCREEN_WIDTH)
 end
 
 function createShot(x, y, direction)
-    if not can_shoot then return end
-
     local shot = {
         x = x,
         y = y,
         direction = direction,
         active = true,
-        time = 0,          -- Zeit für die Parabelberechnung
-        max_time = 10,    -- Maximale Flugzeit (anpassbar für Reichweite)
-        height = 3,      -- Maximale Höhe der Parabel
-        speed = 2         -- Horizontale Geschwindigkeit
+        time = 0,
+        max_time = 40,
+        height = 3,
+        speed = 1
     }
+    shot_start_coords = x
     add(shots, shot)
-    can_shoot = false
-    cooldown_counter = cooldown
 end
+
 
 function check_shot_collision(shot)
     -- Prüfe, ob der Schuss auf ein Hindernis trifft
@@ -186,37 +182,38 @@ end
 function update_parabolic_shot(shot)
     shot.time = shot.time + 1
 
-    -- Parabelberechnung: y = -a*(t - max_time/2)^2 + height
     local t = shot.time / shot.max_time
     local y_offset = -4 * shot.height * (t - 0.5)^2 + shot.height
 
     shot.x = shot.x + shot.speed * shot.direction
-    shot.y = shot.y - y_offset  -- y_offset ist positiv nach oben
+    shot.y = shot.y - y_offset
 
-    --[[ Kollisionsprüfung
-    if check_shot_collision(shot) or shot.time >= shot.max_time then
+    if check_shot_collision(shot) then
         shot.active = false
-        can_shoot = true
-    end --]]
+    end
 
 end
 
---[[
+function update_normal_shot()
+    for shot in all(shots) do
+
+        if shot.active then
+            shot.x = (shot.x + shot.speed) * shot.direction  -- Bewege den Schuss
+        end
+        if check_shot_collision(shot) then
+            shot.active = false
+        end
+    end
+end
+
+
 function update_shots()
+    local active_shots = 0
     for shot in all(shots) do
         if shot.active then
-            shot.x = shot.x + shot_speed * shot.direction  -- Bewege den Schuss
-
-            -- Prüfe auf Kollisionserkennung
-            if check_shot_collision(shot) then
-                shot.active = false  -- Schuss deaktivieren, wenn er auf ein Hindernis trifft
-                can_shoot = true  -- Schießen wieder erlauben
-            end
-
-            -- Schuss deaktivieren, wenn er den Bildschirm verlässt
-            if shot.x < 0 or shot.x > 380 then
-                shot.active = false
-            end
+            active_shots += 1
+            --update_parabolic_shot(shot)
+            update_normal_shot()
         end
     end
 
@@ -226,24 +223,19 @@ function update_shots()
             del(shots, shots[i])
         end
     end
-end
---]]
 
-function update_shots()
-    for shot in all(shots) do
-        if shot.active then
-            update_parabolic_shot(shot)
-        end
+    if active_shots == 0 and player_mode == "shooting" then
+        player_mode = "driving"
     end
-
-    -- Inaktive Schüsse entfernen
-    for i = #shots, 1, -1 do
-        if not shots[i].active then
-            del(shots, shots[i])
-        end
-    end
+    enable_driving_mode()
 end
 
+function enable_driving_mode()
+    if player_mode == "driving" then
+        applyVerticalMovement()
+        applyHorizontalMovement()
+    end
+end
 
 -- Pico-8 Standard Functions
 function _update()
@@ -260,31 +252,14 @@ function _update()
     end
     calculateVerticalVelocity(MAX_FALL_SPEED)
 
+    -- Springen
     if btnp(2) and isPlayerOnGround()then
         velocity_y = -JUMP_HEIGHT
     end
 
-    if player_mode == "driving" then
-         applyVerticalMovement()
-         applyHorizontalMovement()
-    end
-
-    updateCamera()
-
-    -- Cooldown aktualisieren
-    if not can_shoot and cooldown_counter > 0 then
-        cooldown_counter = cooldown_counter - 1
-        if cooldown_counter == 0 then  -- Klammer hinzugefügt
-            can_shoot = true
-        end
-    end
-
-    -- Schuss abfeuern
-    --if btnp(5) and can_shoot then  -- X-Taste
-      --  createShot(player.x + 8, player.y + 1, 1)  -- Schuss nach rechts
-    -- end
-    if btnp(5) and can_shoot then
-        player_mode = "shooting"
+    enable_driving_mode()
+    if btnp(5) and can_shoot and isPlayerOnGround() then
+        --player_mode = "shooting"
         if player.current_sprite == PLAYER_SPRITE_RIGHT then
             createShot(player.x + 8, player.y, 1)  -- Richtung 1 = rechts
         else
@@ -293,24 +268,36 @@ function _update()
     end
 
     update_shots()
+
+    updateCamera()
+
+    -- Schuss abfeuern
+    --if btnp(5) and can_shoot then  -- X-Taste
+      --  createShot(player.x + 8, player.y + 1, 1)  -- Schuss nach rechts
+    -- end
+
+
 end
 
 function _draw()
     cls()
 
     if game_state == "title" then
-        -- Draw the title
-        draw_long_sprite(SCREEN_WIDTH/4, title_y)
-        --print("ShellShockLite", 46, title_y, 7)
-
-        -- Draw the prompt to start
-        if title_y >= 40 then
-            print("Press c to begin", (SCREEN_WIDTH/4)-2, 80, 7)
-        end
+        draw_title_screen()
     elseif game_state == "playing" then
         draw_game()
     end
+end
 
+function draw_title_screen()
+    -- Draw the title
+    draw_long_sprite(SCREEN_WIDTH/4, title_y)
+    --print("ShellShockLite", 46, title_y, 7)
+
+    -- Draw the prompt to start
+    if title_y >= 40 then
+        print("Press c to begin", (SCREEN_WIDTH/4)-2, 80, 7)
+    end
 end
 
 function draw_long_sprite(x, y)
@@ -322,7 +309,7 @@ function draw_long_sprite(x, y)
 end
 
 function draw_game()
-    cls(1)
+    cls(12)
     camera(camera_x, camera_y)
     map()
     spr(BORDER_SPRITE, 8, 40)
@@ -330,16 +317,17 @@ function draw_game()
     spr(BORDER_SPRITE, 8, 26)
     spr(player.current_sprite, player.x, player.y)
 
-    -- Kamera zurücksetzen, um UI-Elemente fest zu zeichnen
-    camera(0, 0)
-
     -- Zeichne Schüsse
     for shot in all(shots) do
         if shot.active then
-            spr(16, shot.x-3, shot.y-1)
+            spr(16, shot.x-2, shot.y)
         end
     end
 
-    camera(0,0)
-    print("x="..player.x.." y="..player.y, 0, 0, 7)
+    -- Kamera zurücksetzen, um UI-Elemente fest zu zeichnen
+    camera(0, 0)
+    print("x=" .. player.x .. " y=" .. player.y, 0, 0, 7)
+    print("Shoot_x startpoint: " .. shot_start_coords, 0, 7, 7)
+    print("Player Mode: " .. player_mode, 0, 14, 7)
 end
+
