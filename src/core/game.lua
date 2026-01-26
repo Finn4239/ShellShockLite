@@ -255,6 +255,7 @@ function _update()
     -- Springen
     if btnp(2) and isPlayerOnGround()then
         velocity_y = -JUMP_HEIGHT
+        sfx(02)
     end
 
     enable_driving_mode()
@@ -265,6 +266,7 @@ function _update()
         else
             createShot(player.x + 8, player.y, -1)  -- Richtung -1 = links
         end
+        sfx(01)
     end
 
     update_shots()
