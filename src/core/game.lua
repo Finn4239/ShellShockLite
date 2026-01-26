@@ -6,7 +6,8 @@ JUMP_HEIGHT = 4
 PLAYER_SPRITE_LEFT = 0
 PLAYER_SPRITE_RIGHT = 1
 BORDER_SPRITE = 6
-SHOT_SPRITE = 16
+NORMAL_SHOT_SPRITE = 16
+GRENADE_SHOT_SPRITE = 32
 -- Map dimensions
 MAP_WIDTH = 128*8
 MAP_HEIGHT = 30*8
@@ -24,6 +25,10 @@ camera_threshold_y = 25
 shots = {}  -- Tabelle für alle Schüsse
 can_shoot = true
 shot_start_coords = 0 --only for debug info
+weapons = {
+    "normal_shot",
+    "grenade_shot"
+}
 -- Game State
 game_state = "title" -- Possible states: "title", "playing", "game_over"
 -- Player Mode
@@ -135,8 +140,12 @@ function update_shots()
     for shot in all(shots) do
         if shot.active then
             active_shots += 1
-            --update_parabolic_shot(shot)
-            update_normal_shot()
+            if weapons == "normal_shot" then
+                update_normal_shot(shot)
+            else
+                update_parabolic_shot(shot)
+            end
+
         end
     end
 
@@ -170,14 +179,16 @@ function _update()
 
     enable_driving_mode()
 
-    if btnp(5) and can_shoot and is_player_on_ground() then
-        --player_mode = "shooting"
-        if player.current_sprite == PLAYER_SPRITE_RIGHT then
-            create_shot(player.x + 8, player.y, 1)  -- Richtung 1 = rechts
+    if btnp(5) then
+        shooting()
+    end
+
+    if btnp(4) then
+        if weapons == "normal_shot" then
+            weapons = "grenade_shot"
         else
-            create_shot(player.x + 8, player.y, -1)  -- Richtung -1 = links
+            weapons = "normal_shot"
         end
-        sfx(01)
     end
 
     update_shots()
@@ -188,6 +199,18 @@ function _update()
     --if btnp(5) and can_shoot then  -- X-Taste
     --  createShot(player.x + 8, player.y + 1, 1)  -- Schuss nach rechts
     -- end
+end
+
+function shooting()
+    if can_shoot and is_player_on_ground() then
+        --player_mode = "shooting"
+        if player.current_sprite == PLAYER_SPRITE_RIGHT then
+            create_shot(player.x + 8, player.y, 1)  -- Richtung 1 = rechts
+        else
+            create_shot(player.x + 8, player.y, -1)  -- Richtung -1 = links
+        end
+        sfx(01)
+    end
 end
 
 function _draw()
@@ -319,7 +342,12 @@ function draw_game()
     -- Zeichne Schüsse
     for shot in all(shots) do
         if shot.active then
-            spr(16, shot.x-2, shot.y)
+            if weapons == "normal_shot" then
+                spr(16, shot.x-2, shot.y)
+                spr(10, player.x+8, player.y-4)
+            elseif weapons == "grenade_shot" then
+                spr(32, shot.x-2, shot.y)
+            end
         end
     end
 
