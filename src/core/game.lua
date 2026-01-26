@@ -168,13 +168,8 @@ function _update()
     end
     calculate_vertical_velocity(MAX_FALL_SPEED)
 
-    -- Springen
-    if btnp(2) and is_player_on_ground() then
-        velocity_y = -JUMP_HEIGHT
-        sfx(02)
-    end
-
     enable_driving_mode()
+
     if btnp(5) and can_shoot and is_player_on_ground() then
         --player_mode = "shooting"
         if player.current_sprite == PLAYER_SPRITE_RIGHT then
@@ -247,10 +242,18 @@ function is_player_on_ground()
     return not is_object_in_air(left_edge, 1) or not is_object_in_air(right_edge, 1)
 end
 
+function jump()
+    if btnp(2) and is_player_on_ground() then
+        velocity_y = -JUMP_HEIGHT
+        sfx(02)
+    end
+end
+
 function enable_driving_mode()
     if player_mode == "driving" then
         apply_vertical_movement()
         apply_horizontal_movement()
+        jump()
     end
 end
 
