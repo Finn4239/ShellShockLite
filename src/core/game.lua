@@ -6,7 +6,8 @@ JUMP_HEIGHT = 4
 PLAYER_SPRITE_LEFT = 0
 PLAYER_SPRITE_RIGHT = 1
 BORDER_SPRITE = 6
-NORMAL_SHOT_SPRITE = 16
+NORMAL_SHOT_SPRITE_RIGHT = 16
+NORMAL_SHOT_SPRITE_LEFT = 17
 GRENADE_SHOT_SPRITE = 32
 FIRE_EFFECT_LEFT_RIGHT = 10
 FIRE_EFFECT_LEFT_LEFT = 11
@@ -419,8 +420,7 @@ function draw_game()
     for shot in all(shots) do
         if shot.active then
             if weapons == "normal_shot" then
-                spr(16, shot.x-2, shot.y)
-                
+                draw_normal_shot(shot)
             elseif weapons == "grenade_shot" then
                 spr(32, shot.x-2, shot.y)
             end
@@ -432,4 +432,12 @@ function draw_game()
     print("x=" .. player.x .. " y=" .. player.y, 0, 0, 7)
     print("Shoot_x startpoint: " .. shot_start_coords, 0, 7, 7)
     print("Player Mode: " .. player_mode, 0, 14, 7)
+end
+
+function draw_normal_shot(shot)
+    if player.current_sprite == PLAYER_SPRITE_RIGHT then
+        spr(NORMAL_SHOT_SPRITE_RIGHT, shot.x-2, shot.y)
+    elseif player.current_sprite == PLAYER_SPRITE_LEFT then
+        spr(NORMAL_SHOT_SPRITE_LEFT, shot.x-6, shot.y+1)
+    end
 end
