@@ -304,6 +304,7 @@ function update_parabolic_shot(shot)
     shot.y = shot.y - y_offset
 
     if check_shot_collision(shot) then
+        explode(shot.x, shot.y, 2) -- Radius = 2 Tiles
         shot.active = false
         spr(EXPLOSION_EFFECT_SPRITE, shot.x-4, shot.y-4)
     end
@@ -319,6 +320,34 @@ function update_normal_shot()
         end
     end
 end
+
+function damage_tile_at(x, y)
+    local tx = flr(x/8)
+    local ty = flr(y/8)
+    local t = mget(tx, ty)
+
+    if t == 02 or t == 34 or t == 36 then
+        mset(tx, ty, 14) -- leicht beschädigt
+    elseif t == 14 then
+        mset(tx, ty, 46) -- stark beschädigt
+    elseif t == 46 then
+        mset(tx, ty, 26)  -- weg
+    end
+end
+
+function explode(x, y, radius)
+    local tx = flr(x/8)
+    local ty = flr(y/8)
+
+    for dx=-radius, radius do
+        for dy=-radius, radius do
+            if dx*dx + dy*dy <= radius*radius then
+                damage_tile_at((tx+dx)*8, (ty+dy)*8)
+            end
+        end
+    end
+end
+
 
 function draw_title_screen()
     -- Draw the title
