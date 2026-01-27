@@ -288,10 +288,9 @@ function enable_driving_mode()
 end
 
 function check_shot_collision(shot)
-    -- Prüfe, ob der Schuss auf ein Hindernis trifft
-    local tile_x = flr(shot.x / 8)
-    local tile_y = flr(shot.y / 8)
-    return fget(mget(tile_x, tile_y), 0)  -- Prüft, ob das Tile ein Hindernis ist
+    local tx = flr((shot.x + 4) / 8)
+    local ty = flr((shot.y + 4) / 8)
+    return fget(mget(tx, ty), 0)
 end
 
 function update_parabolic_shot(shot)
@@ -304,20 +303,25 @@ function update_parabolic_shot(shot)
     shot.y = shot.y - y_offset
 
     if check_shot_collision(shot) then
-        explode(shot.x, shot.y, 2) -- Radius = 2 Tiles
+        make_cross_hole(shot.x, shot.y) -- <-- Kreuz anstatt einzelnes Loch
         shot.active = false
-        spr(EXPLOSION_EFFECT_SPRITE, shot.x-4, shot.y-4)
     end
 end
 
-function update_normal_shot()
-    for shot in all(shots) do
-        if shot.active then
-            shot.x = (shot.x + shot.speed) * shot.direction  -- Bewege den Schuss
-        end
-        if check_shot_collision(shot) then
-            shot.active = false
-        end
+function make_hole(x,y)
+    local tx = flr(x/8)
+    local ty = flr(y/8)
+    mset(tx,ty,0) -- 0 = Luft
+end
+
+
+function update_normal_shot(shot)
+
+    shot.x = shot.x + shot.speed * shot.direction
+
+    if check_shot_collision(shot) then
+        make_hole(shot.x, shot.y)
+        shot.active = false
     end
 end
 
@@ -336,17 +340,40 @@ function damage_tile_at(x, y)
 end
 
 function explode(x, y, radius)
-    local tx = flr(x/8)
-    local ty = flr(y/8)
+    -- erst Tile ermitteln
+    local tx = flr(x / 8)
+    local ty = flr(y / 8)
 
-    for dx=-radius, radius do
-        for dy=-radius, radius do
-            if dx*dx + dy*dy <= radius*radius then
-                damage_tile_at((tx+dx)*8, (ty+dy)*8)
-            end
+    -- dann Explosion relativ zum Tile-Zentrum
+    for dx = -radius, radius do
+        for dy = -radius, radius do
+            damage_tile_at((tx + dx) * 8, (ty + dy) * 8)
         end
     end
 end
+
+function make_cross_hole(x, y)
+    -- x und y = Pixel-Koordinaten des Treffpunkts
+    local tx = flr(x/8)
+    local ty = flr(y/8)
+
+    -- Kreuzmuster: Zentrum + 4 Richtungen
+    local positions = {
+        {0, 0},  -- Zentrum
+        {1, 0},  -- rechts
+        {-1, 0}, -- links
+        {0, 1},  -- unten
+        {0, -1}  -- oben
+    }
+
+    for pos in all(positions) do
+        local nx = tx + pos[1]
+        local ny = ty + pos[2]
+        mset(nx, ny, 0) -- 0 = Luft
+    end
+end
+
+
 
 
 function draw_title_screen()
