@@ -8,6 +8,9 @@ PLAYER_SPRITE_RIGHT = 1
 BORDER_SPRITE = 6
 NORMAL_SHOT_SPRITE = 16
 GRENADE_SHOT_SPRITE = 32
+FIRE_EFFECT_LEFT_RIGHT = 10
+FIRE_EFFECT_LEFT_LEFT = 11
+EXPLOSION_EFFECT_SPRITE = 12
 -- Map dimensions
 MAP_WIDTH = 128*8
 MAP_HEIGHT = 30*8
@@ -47,6 +50,9 @@ player = {
     dx = 0, -- Player velocity X
     dy = 0  -- Player velocity Y
 }
+
+fire_effect_timer = 0
+explosion_effect_timer = 0
 
 -- Movement-Functions
 function apply_vertical_movement()
@@ -175,6 +181,11 @@ function _update()
             game_state = "playing"
         end
     end
+    -- Reduziere den Timer für den Feuereffekt
+    if fire_effect_timer > 0 then
+        fire_effect_timer -= 1
+    end
+
     calculate_vertical_velocity(MAX_FALL_SPEED)
 
     enable_driving_mode()
@@ -194,11 +205,6 @@ function _update()
     update_shots()
 
     update_camera()
-
-    -- Schuss abfeuern
-    --if btnp(5) and can_shoot then  -- X-Taste
-    --  createShot(player.x + 8, player.y + 1, 1)  -- Schuss nach rechts
-    -- end
 end
 
 function shooting()
@@ -207,8 +213,9 @@ function shooting()
         if player.current_sprite == PLAYER_SPRITE_RIGHT then
             create_shot(player.x + 8, player.y, 1)  -- Richtung 1 = rechts
         else
-            create_shot(player.x + 8, player.y, -1)  -- Richtung -1 = links
+            create_shot(player.x, player.y, -1)  -- Richtung -1 = links
         end
+        fire_effect_timer = 3
         sfx(01)
     end
 end
@@ -298,6 +305,7 @@ function update_parabolic_shot(shot)
 
     if check_shot_collision(shot) then
         shot.active = false
+        spr(EXPLOSION_EFFECT_SPRITE, shot.x-4, shot.y-4)
     end
 end
 
@@ -330,6 +338,16 @@ function draw_long_sprite(x, y)
     end
 end
 
+function draw_fire_effect()
+    if fire_effect_timer > 0 then
+        if player.current_sprite == PLAYER_SPRITE_RIGHT then
+            spr(FIRE_EFFECT_LEFT_RIGHT, player.x + 8, player.y)
+        else
+            spr(FIRE_EFFECT_LEFT_LEFT, player.x - 8, player.y)
+        end
+    end
+end
+
 function draw_game()
     cls(12)
     camera(camera_x, camera_y)
@@ -339,12 +357,14 @@ function draw_game()
     spr(BORDER_SPRITE, 8, 26)
     spr(player.current_sprite, player.x, player.y)
 
+    draw_fire_effect()
+
     -- Zeichne Schüsse
     for shot in all(shots) do
         if shot.active then
             if weapons == "normal_shot" then
                 spr(16, shot.x-2, shot.y)
-                spr(10, player.x+8, player.y-4)
+                
             elseif weapons == "grenade_shot" then
                 spr(32, shot.x-2, shot.y)
             end
