@@ -340,7 +340,7 @@ function damage_tile_at(x, y)
 end
 
 function explode(x, y, radius)
-    -- erst Tile ermitteln
+    -- erstes Tile ermitteln
     local tx = flr(x / 8)
     local ty = flr(y / 8)
 
