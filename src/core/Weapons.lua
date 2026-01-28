@@ -63,12 +63,12 @@ function update_parabolic_shot(shot)
     shot.time += 1
 
     local vertex = 0.5 -- Scheitelpunkt der Parabel in der Mitte der Flugzeit
-    local t = shot.time / shot.max_time
+    local t_normalized = shot.time / shot.max_time
     local parabolic_strength = -4 -- Standard value: -4
-    local parabolic_amplitude = parabolic_strength * shot.height * (t - vertex)^2 + shot.height
+    local amplitude = parabolic_strength * shot.height * (t_normalized - vertex)^2 + shot.height
 
-    shot.x = shot.x + shot.speed * shot.direction
-    shot.y = shot.y - parabolic_amplitude + GRAVITY
+    shot.x = shot.x + shot.speed * shot.direction -- Schuss horizontal bewegen
+    shot.y = shot.y - amplitude + GRAVITY -- Schuss vertikal bewegen (GRAVITY hinzufügen, um den Fall zu simulieren)
 
     handle_grenade_collision(shot)
 end
