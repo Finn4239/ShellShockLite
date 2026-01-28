@@ -13,7 +13,7 @@ weapon_effects = {
     },
     grenade_shot = {
         explosion_effect_duration = 0,
-        explosion_sound = "04"
+        explosion_sound = "00"
     }
 }
 
@@ -239,7 +239,7 @@ function make_hole(x, y)
             and t ~= 21 then
         -- normales Tile zerstören
         mset(tx, ty, 0)
-        sfx(00)  -- normaler Treffer-Sound
+        sfx(weapon_effects.grenade_shot.explosion_sound)  -- normaler Treffer-Sound
     else
         -- Border getroffen → anderer Sound
         sfx(06)
