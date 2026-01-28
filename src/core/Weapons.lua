@@ -40,12 +40,11 @@ function update_shots()
     for shot in all(shots) do
         if shot.active then
             active_shots += 1
-        if weapons == "normal_shot" then
-        update_normal_shot(shot)
+            if weapons == "normal_shot" then
+                update_normal_shot(shot)
             else
-            update_parabolic_shot(shot)
+                update_parabolic_shot(shot)
             end
-
         end
     end
 
