@@ -1,11 +1,11 @@
 -- Shooting-Functions
-function shooting()
+function shooting(type)
     if shooting_cooldown <= 0 and is_player_on_ground() then
         --player_mode = PLAYER_MODE.SHOOTING
         if player.current_sprite == PLAYER_SPRITE_RIGHT then
-            create_shot(player.x + 8, player.y, 1)  -- Richtung 1 = rechts
+            create_shot(type, player.x + 8, player.y, 1)  -- Richtung 1 = rechts
         else
-            create_shot(player.x, player.y, -1)  -- Richtung -1 = links
+            create_shot(type, player.x, player.y, -1)  -- Richtung -1 = links
         end
         weapon_effects.fire_effect_duration = 3
         sfx(weapon_effects.normal_shot.fire_sound)
@@ -38,15 +38,15 @@ function _update()
 
     -- Waffenwechsel
     if btnp(4) then
-        if weapons == "normal_shot" then
-            weapons = "grenade_shot"
+        if weapon_type == "normal_shot" then
+            weapon_type = "grenade_shot"
         else
-            weapons = "normal_shot"
+            weapon_type = "normal_shot"
         end
     end
     -- Schießen
     if btnp(5) then
-        shooting()
+        shooting(weapon_type)
     end
 end
 

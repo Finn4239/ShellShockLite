@@ -1,6 +1,6 @@
 shots = {}
 explosions = {}
-weapons = {
+weapon_type = {
     "normal_shot",
     "grenade_shot"
 }
@@ -26,9 +26,7 @@ function check_is_boarder(x, y)
     local t = mget(tx, ty)
 
     -- Border-Sprites schützen
-    if t == BORDER_SPRITE_LEFT
-            or t == BORDER_SPRITE_RIGHT
-            or t == 4
+    if t == 4
             or t == 5
             or t == 20
             or t == 21 then
@@ -38,19 +36,17 @@ function check_is_boarder(x, y)
     return false
 end
 
-
-
-
-function create_shot(x, y, direction)
+function create_shot(type, x, y, direction)
     local shot = {
+        type = type,
         x = x,
         y = y,
         direction = direction,
         active = true,
         time = 0,
-        max_time = 40,
-        height = 3,
-        speed = 1
+        max_time = 30, -- Standard value: 30
+        height = 3, -- Standard value: 3
+        speed = 2 -- Standard value: 2
     }
     shot_start_coords = x
     add(shots, shot)
@@ -61,7 +57,7 @@ function update_shots()
     for shot in all(shots) do
         if shot.active then
             active_shots += 1
-            if weapons == "normal_shot" then
+            if shot.type == "normal_shot" then
                 update_normal_shot(shot)
             else
                 update_parabolic_shot(shot)
@@ -83,17 +79,17 @@ function update_shots()
 end
 
 function update_parabolic_shot(shot)
-    shot.time = shot.time + 1
-    shot.y = shot.y + GRAVITY
+    shot.time += 1
+    shot.y += GRAVITY
 
     local vertex = 0.5 -- Scheitelpunkt der Parabel in der Mitte der Flugzeit
     local t = shot.time / shot.max_time
-    local parabola_strength = -3
-    local parabola_amplitude = parabola_strength * shot.height * (t - vertex)^2 + shot.height
+    local parabolic_strength = -4 -- Standard value: -4
+    local parabolic_amplitude = parabolic_strength * shot.height * (t - vertex)^2 + shot.height
 
 
     shot.x = shot.x + shot.speed * shot.direction
-    shot.y = shot.y - parabola_amplitude
+    shot.y = shot.y - parabolic_amplitude
 
     if check_shot_collision(shot) then
         -- Nur Kreuz erzeugen, wenn kein Border
@@ -126,9 +122,9 @@ end
 function draw_shots()
     for shot in all(shots) do
         if shot.active then
-            if weapons == "normal_shot" then
+            if shot.type == "normal_shot" then
                 draw_normal_shot(shot)
-            elseif weapons == "grenade_shot" then
+            elseif shot.type == "grenade_shot" then
                 draw_grenade_shot(shot)
             end
         end
