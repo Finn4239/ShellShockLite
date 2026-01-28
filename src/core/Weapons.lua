@@ -139,6 +139,20 @@ function draw_explosions()
 end
 
 -- Help functions
+function damage_tile_at(x, y)
+    local tx = flr(x/8)
+    local ty = flr(y/8)
+    local t = mget(tx, ty)
+
+    if t == 02 or t == 34 or t == 36 then
+        mset(tx, ty, 14) -- leicht beschädigt
+    elseif t == 14 then
+        mset(tx, ty, 46) -- stark beschädigt
+    elseif t == 46 then
+        mset(tx, ty, 26)  -- weg
+    end
+end
+
 function make_cross_hole(x, y)
     local tx = flr(x/8)
     local ty = flr(y/8)
@@ -163,10 +177,6 @@ function make_cross_hole(x, y)
                 and t ~= 26
                 and t ~= 20
                 and t ~= 21
-                and t ~= 38
-                and t ~= 39
-                and t ~= 54
-                and t ~= 55
         then
             -- normales Tile zerstören
             mset(nx, ny, 0)
@@ -175,20 +185,6 @@ function make_cross_hole(x, y)
             -- Border getroffen → anderer Sound
             sfx(6)
         end
-    end
-end
-
-function damage_tile_at(x, y)
-    local tx = flr(x/8)
-    local ty = flr(y/8)
-    local t = mget(tx, ty)
-
-    if t == 02 or t == 34 or t == 36 then
-        mset(tx, ty, 14) -- leicht beschädigt
-    elseif t == 14 then
-        mset(tx, ty, 46) -- stark beschädigt
-    elseif t == 46 then
-        mset(tx, ty, 26)  -- weg
     end
 end
 
@@ -213,7 +209,7 @@ function make_hole(x, y)
     end
 end
 
-function check_is_boarder(x, y)
+function check_is_boarder(x, y, shot)
     local tx = flr(x / 8)
     local ty = flr(y / 8)
     local t = mget(tx, ty)
@@ -223,6 +219,7 @@ function check_is_boarder(x, y)
             or t == 5
             or t == 20
             or t == 21 then
+
         return true
     end
 
@@ -241,7 +238,7 @@ function handle_grenade_collision(shot)
     local collision_y = shot.y
 
     if check_shot_collision_at(collision_x, collision_y) then
-        if not check_is_boarder(collision_x, collision_y) then
+        if not check_is_boarder(collision_x, collision_y, shot.direction) then
             make_cross_hole(collision_x, collision_y)
             create_explosion(collision_x, collision_y)
         end
@@ -255,7 +252,7 @@ function handle_normal_shot_collision(shot)
     local collision_y = shot.y
 
     if check_shot_collision_at(collision_x, collision_y) then
-        if not check_is_boarder(collision_x, collision_y) then
+        if not check_is_boarder(collision_x, collision_y, shot.direction) then
             make_hole(collision_x, collision_y)
         end
         shot.active = false
