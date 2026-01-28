@@ -157,8 +157,7 @@ function make_cross_hole(x, y)
     local tx = flr(x/8)
     local ty = flr(y/8)
 
-    -- Kreuzmuster: Zentrum + 4 Richtungen
-    local positions = {
+    local positions = { -- Kreuzmuster: Zentrum + 4 Richtungen
         {0, 0},  -- Zentrum
         {1, 0},  -- rechts
         {-1, 0}, -- links
@@ -171,18 +170,13 @@ function make_cross_hole(x, y)
         local ny = ty + pos[2]
 
         local t = mget(nx, ny)
-        if t ~= 4
-                and t ~= 5
-                and t ~= 10
-                and t ~= 26
-                and t ~= 20
-                and t ~= 21
-        then
-            -- normales Tile zerstören
+        if t ~= 4 and t ~= 5
+                and t ~= 10 and t ~= 26
+                and t ~= 20 and t ~= 21
+        then -- normales Tile zerstören
             mset(nx, ny, 0)
             sfx(weapon_effects.grenade_shot.explosion_sound)  -- normaler Treffer
-        else
-            -- Border getroffen → anderer Sound
+        else -- Border getroffen → anderer Sound
             sfx(6)
         end
     end
@@ -193,18 +187,13 @@ function make_hole(x, y)
     local ty = flr(y/8)
     local t = mget(tx, ty)
 
-    if t ~= 4
-            and t ~= 5
-            and t ~= 10
-            and t ~= 26
-            and t ~= 20
-            and t ~= 21
-           then
-        -- normales Tile zerstören
+    if t ~= 4 and t ~= 5
+            and t ~= 10 and t ~= 26
+            and t ~= 20 and t ~= 21
+           then -- normales Tile zerstören
         mset(tx, ty, 0)
         sfx(weapon_effects.normal_shot.hit_sound)  -- normaler Treffer-Sound
-    else
-        -- Border getroffen → anderer Sound
+    else -- Border getroffen → anderer Sound
         sfx(06)
     end
 end
