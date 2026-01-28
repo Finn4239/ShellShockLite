@@ -204,10 +204,8 @@ function check_is_boarder(x, y, shot)
     local t = mget(tx, ty)
 
     -- Border-Sprites schützen
-    if t == 4
-            or t == 5
-            or t == 20
-            or t == 21 then
+    if t == 4 or t == 5
+            or t == 20 or t == 21 then
 
         return true
     end
