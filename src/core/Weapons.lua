@@ -36,6 +36,13 @@ function check_is_boarder(x, y)
     return false
 end
 
+function check_shot_collision_at(x, y)
+    local tx = flr(x/8)
+    local ty = flr(y/8)
+    return mget(tx, ty) ~= 0
+end
+
+
 function create_shot(type, x, y, direction)
     local shot = {
         type = type,
@@ -86,21 +93,20 @@ function update_parabolic_shot(shot)
     local t = shot.time / shot.max_time
     local parabolic_strength = -4 -- Standard value: -4
     local parabolic_amplitude = parabolic_strength * shot.height * (t - vertex)^2 + shot.height
-
-
     shot.x = shot.x + shot.speed * shot.direction
     shot.y = shot.y - parabolic_amplitude
 
-    if check_shot_collision(shot) then
-        -- Nur Kreuz erzeugen, wenn kein Border
-        if not check_is_boarder(shot.x, shot.y) then
-            make_cross_hole(shot.x, shot.y)
-            create_explosion(shot.x, shot.y)
-        end
+    local cx = shot.x + shot.direction * 2
+    local cy = shot.y
 
-        -- Schuss in jedem Fall deaktivieren
-        shot.active = false
+    if check_shot_collision_at(cx, cy) then
+    if not check_is_boarder(cx, cy) then
+    make_cross_hole(cx, cy)
+    create_explosion(cx, cy)
     end
+    shot.active = false
+    end
+
 end
 
 function update_normal_shot(shot)
@@ -108,15 +114,16 @@ function update_normal_shot(shot)
     shot.x = shot.x + shot.speed * shot.direction
 
     -- Kollision prüfen
-    if check_shot_collision(shot) then
-        -- Nur zerstören, wenn kein Border
-        if not check_is_boarder(shot.x, shot.y) then
-            make_hole(shot.x, shot.y)
-        end
+    local cx = shot.x + shot.direction * 2
+    local cy = shot.y
 
-        -- Schuss wird in jedem Fall deaktiviert
+    if check_shot_collision_at(cx, cy) then
+        if not check_is_boarder(cx, cy) then
+            make_hole(cx, cy)
+        end
         shot.active = false
     end
+
 end
 
 function draw_shots()
@@ -196,7 +203,7 @@ function make_cross_hole(x, y)
             sfx(00)  -- normaler Treffer
         else
             -- Border getroffen → anderer Sound
-            sfx(06)
+            sfx(6)
         end
     end
 end
