@@ -110,12 +110,6 @@ function reduce_timers()
     end
 end
 
-function check_shot_collision(shot)
-    local tx = flr((shot.x + 4) / 8)
-    local ty = flr((shot.y + 4) / 8)
-    return fget(mget(tx, ty), 0)
-end
-
 function draw_title_screen()
     draw_long_sprite(SCREEN_WIDTH/4, title_y)
 
@@ -142,8 +136,9 @@ function draw_game()
 
     -- Kamera zurücksetzen, um UI-Elemente fest zu zeichnen
     camera(0, 0)
-    local current_sprite = 0
 
+    local current_sprite = 0
+    -- Benötigt für die Anzeige der aktuellen Waffe
     if weapon_type == "normal_shot" then
         current_sprite = NORMAL_SHOT_SPRITE_RIGHT
     elseif weapon_type == "grenade_shot" then

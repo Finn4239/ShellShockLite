@@ -154,11 +154,9 @@ function make_cross_hole(x, y)
     for pos in all(positions) do
         local nx = tx + pos[1]
         local ny = ty + pos[2]
-
         local t = mget(nx, ny)
-        if t ~= 4 and t ~= 5
-                and t ~= 10 and t ~= 26
-                and t ~= 20 and t ~= 21
+
+        if t ~= 4 and t ~= 5 and t ~= 10 and t ~= 26 and t ~= 20 and t ~= 21
         then -- normales Tile zerstören
             mset(nx, ny, 0)
             sfx(weapon_effects.grenade_shot.explosion_sound)
@@ -237,4 +235,10 @@ function remove_inactive_shots()
         end
     end
 
+end
+
+function check_shot_collision(shot)
+    local tx = flr((shot.x + 4) / 8)
+    local ty = flr((shot.y + 4) / 8)
+    return fget(mget(tx, ty), 0)
 end
