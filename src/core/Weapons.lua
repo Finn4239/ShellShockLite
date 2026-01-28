@@ -193,6 +193,7 @@ end
 --- Aktuell können Schüsse Boarders-Tiles zerstören
 --- Prüfen, ob der Schuss ein Border-Tile getroffen hat, wenn ja return
 --- Boarder Sprite sind BORDER_SPRITE_LEFT = 6 & BORDER_SPRITE_RIGHT = 7
+--- Falls Boarder entfernt werden, kann diese Funktion gelöscht werden
 ---
 function check_is_boarder()
 end
