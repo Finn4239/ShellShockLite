@@ -202,7 +202,7 @@ function make_cross_hole(x, y)
                 and t ~= 21 then
             -- normales Tile zerstören
             mset(nx, ny, 0)
-            sfx(00)  -- normaler Treffer
+            sfx(weapon_effects.grenade_shot.explosion_sound)  -- normaler Treffer
         else
             -- Border getroffen → anderer Sound
             sfx(6)
@@ -239,7 +239,7 @@ function make_hole(x, y)
             and t ~= 21 then
         -- normales Tile zerstören
         mset(tx, ty, 0)
-        sfx(weapon_effects.grenade_shot.explosion_sound)  -- normaler Treffer-Sound
+        sfx(weapon_effects.normal_shot.hit_sound)  -- normaler Treffer-Sound
     else
         -- Border getroffen → anderer Sound
         sfx(06)
