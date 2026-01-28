@@ -6,6 +6,7 @@ function shooting(type)
             create_shot(type, player.x + 8, player.y, 1)  -- Richtung 1 = rechts
         else
             create_shot(type, player.x, player.y, -1)  -- Richtung -1 = links
+
         end
         weapon_effects.fire_effect_duration = 3
         sfx(weapon_effects.normal_shot.fire_sound)
@@ -146,6 +147,15 @@ function draw_game()
 
     -- Kamera zurücksetzen, um UI-Elemente fest zu zeichnen
     camera(0, 0)
+    local current_sprite = 0
 
-    print("x=" .. player.x .. " y=" .. player.y, 0, 0, 7)
+    if weapon_type == "normal_shot" then
+        current_sprite = NORMAL_SHOT_SPRITE_RIGHT
+    elseif weapon_type == "grenade_shot" then
+        current_sprite = GRENADE_SHOT_SPRITE
+    end
+
+    --print("x=" .. player.x .. " y=" .. player.y, 0, 0, 7)
+    print("weapon-type: ", 1, 1, 7)
+    spr(current_sprite, 51, 1)
 end
