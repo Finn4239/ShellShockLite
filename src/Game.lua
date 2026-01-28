@@ -156,6 +156,6 @@ function draw_game()
     end
 
     --print("x=" .. player.x .. " y=" .. player.y, 0, 0, 7)
-    print("weapon-type: ", 1, 1, 7)
-    spr(current_sprite, 51, 1)
+    print("weapon-type: ", 1, 2, 7)
+    spr(current_sprite, 48, 0)
 end

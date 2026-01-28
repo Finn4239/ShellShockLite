@@ -140,9 +140,9 @@ end
 
 function draw_normal_shot(shot)
     if player.current_sprite == PLAYER_SPRITE_RIGHT then
-        spr(NORMAL_SHOT_SPRITE_RIGHT, shot.x-2, shot.y)
+        spr(NORMAL_SHOT_SPRITE_RIGHT, shot.x-2, shot.y-2)
     elseif player.current_sprite == PLAYER_SPRITE_LEFT then
-        spr(NORMAL_SHOT_SPRITE_LEFT, shot.x-6, shot.y)
+        spr(NORMAL_SHOT_SPRITE_LEFT, shot.x-6, shot.y-2)
     end
 end
 
@@ -170,7 +170,7 @@ end
 
 function draw_explosions()
     for explosion in all(explosions) do
-        spr(EXPLOSION_EFFECT_SPRITE, explosion.x - 4, explosion.y - 4)
+        spr(EXPLOSION_EFFECT_SPRITE, explosion.x - 8, explosion.y - 8,2,2)
     end
 end
 
