@@ -139,20 +139,6 @@ function draw_explosions()
 end
 
 -- Help functions
-function damage_tile_at(x, y)
-    local tx = flr(x/8)
-    local ty = flr(y/8)
-    local t = mget(tx, ty)
-
-    if t == 02 or t == 34 or t == 36 then
-        mset(tx, ty, 14) -- leicht beschädigt
-    elseif t == 14 then
-        mset(tx, ty, 46) -- stark beschädigt
-    elseif t == 46 then
-        mset(tx, ty, 26)  -- weg
-    end
-end
-
 function make_cross_hole(x, y)
     local tx = flr(x/8)
     local ty = flr(y/8)
@@ -175,8 +161,7 @@ function make_cross_hole(x, y)
                 and t ~= 20 and t ~= 21
         then -- normales Tile zerstören
             mset(nx, ny, 0)
-            sfx(weapon_effects.grenade_shot.explosion_sound)  -- normaler Treffer
-        else -- Border getroffen → anderer Sound
+            sfx(weapon_effects.grenade_shot.explosion_sound)
             sfx(6)
         end
     end
@@ -192,8 +177,7 @@ function make_hole(x, y)
             and t ~= 20 and t ~= 21
            then -- normales Tile zerstören
         mset(tx, ty, 0)
-        sfx(weapon_effects.normal_shot.hit_sound)  -- normaler Treffer-Sound
-    else -- Border getroffen → anderer Sound
+        sfx(weapon_effects.normal_shot.hit_sound)
         sfx(06)
     end
 end

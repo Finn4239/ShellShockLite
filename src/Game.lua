@@ -1,7 +1,7 @@
 -- Shooting-Functions
 function shooting(type)
     if shooting_cooldown <= 0 and is_player_on_ground() then
-        --player_mode = PLAYER_MODE.SHOOTING
+        --player_mode = PLAYER_MODE.SHOOTING auskommentiert bis es genutzt wird
         if player.current_sprite == PLAYER_SPRITE_RIGHT then
             create_shot(type, player.x + 8, player.y, 1)  -- Richtung 1 = rechts
         else
@@ -69,7 +69,6 @@ function update_title_screen()
             title_y = title_y + title_speed
         end
 
-        -- Start the game when any button is pressed
         if btnp(4) then
             game_state = GAME_STATE.PLAYING
         end
@@ -103,7 +102,6 @@ function enable_driving_mode()
 end
 
 function reduce_timers()
-    -- Reduziere den Timer für den Feuereffekt
     if weapon_effects.fire_effect_duration > 0 then
         weapon_effects.fire_effect_duration -= 1
     end
@@ -119,11 +117,8 @@ function check_shot_collision(shot)
 end
 
 function draw_title_screen()
-    -- Draw the title
     draw_long_sprite(SCREEN_WIDTH/4, title_y)
-    --print("ShellShockLite", 46, title_y, 7)
 
-    -- Draw the prompt to start
     if title_y >= 40 then
         print("Press c to begin", (SCREEN_WIDTH/4)-2, 80, 7)
     end
