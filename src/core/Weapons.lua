@@ -20,29 +20,6 @@ weapon_effects = {
 -- Shooting
 shooting_cooldown = 0
 
-function check_is_boarder(x, y)
-    local tx = flr(x / 8)
-    local ty = flr(y / 8)
-    local t = mget(tx, ty)
-
-    -- Border-Sprites schützen
-    if t == 4
-            or t == 5
-            or t == 20
-            or t == 21 then
-    return true
-    end
-
-    return false
-end
-
-function check_shot_collision_at(x, y)
-    local tx = flr(x/8)
-    local ty = flr(y/8)
-    return mget(tx, ty) ~= 0
-end
-
-
 function create_shot(type, x, y, direction)
     local shot = {
         type = type,
@@ -72,58 +49,35 @@ function update_shots()
         end
     end
 
-    -- Inaktive Schüsse entfernen
-    for i = #shots, 1, -1 do
-        if not shots[i].active then
-            del(shots, shots[i])
-        end
-    end
+    remove_inactive_shots()
 
+    -- Only necessary if player_mode is used elsewhere
     if active_shots == 0 and player_mode == PLAYER_MODE.SHOOTING then
         player_mode = PLAYER_MODE.DRIVING
     end
+
     enable_driving_mode()
 end
 
 function update_parabolic_shot(shot)
     shot.time += 1
-    shot.y += GRAVITY
 
     local vertex = 0.5 -- Scheitelpunkt der Parabel in der Mitte der Flugzeit
     local t = shot.time / shot.max_time
     local parabolic_strength = -4 -- Standard value: -4
     local parabolic_amplitude = parabolic_strength * shot.height * (t - vertex)^2 + shot.height
+
     shot.x = shot.x + shot.speed * shot.direction
-    shot.y = shot.y - parabolic_amplitude
+    shot.y = shot.y - parabolic_amplitude + GRAVITY
 
-    local cx = shot.x + shot.direction * 2
-    local cy = shot.y
-
-    if check_shot_collision_at(cx, cy) then
-    if not check_is_boarder(cx, cy) then
-    make_cross_hole(cx, cy)
-    create_explosion(cx, cy)
-    end
-    shot.active = false
-    end
-
+    handle_grenade_collision(shot)
 end
 
 function update_normal_shot(shot)
     -- Schuss bewegen
     shot.x = shot.x + shot.speed * shot.direction
 
-    -- Kollision prüfen
-    local cx = shot.x + shot.direction * 2
-    local cy = shot.y
-
-    if check_shot_collision_at(cx, cy) then
-        if not check_is_boarder(cx, cy) then
-            make_hole(cx, cy)
-        end
-        shot.active = false
-    end
-
+    handle_normal_shot_collision(shot)
 end
 
 function draw_shots()
@@ -150,6 +104,16 @@ function draw_grenade_shot(shot)
     spr(GRENADE_SHOT_SPRITE, shot.x-2, shot.y)
 end
 
+function draw_fire_effect()
+    if weapon_effects.fire_effect_duration > 0 then
+        if player.current_sprite == PLAYER_SPRITE_RIGHT then
+            spr(FIRE_EFFECT_LEFT_RIGHT, player.x + 8, player.y)
+        else
+            spr(FIRE_EFFECT_LEFT_LEFT, player.x - 8, player.y)
+        end
+    end
+end
+
 -- Explosion
 function create_explosion(x, y)
     add(explosions, {
@@ -174,6 +138,7 @@ function draw_explosions()
     end
 end
 
+-- Help functions
 function make_cross_hole(x, y)
     local tx = flr(x/8)
     local ty = flr(y/8)
@@ -192,14 +157,17 @@ function make_cross_hole(x, y)
         local ny = ty + pos[2]
 
         local t = mget(nx, ny)
-        if t ~= BORDER_SPRITE_LEFT
-                and t ~= BORDER_SPRITE_RIGHT
-                and t ~= 4
+        if t ~= 4
                 and t ~= 5
                 and t ~= 10
                 and t ~= 26
                 and t ~= 20
-                and t ~= 21 then
+                and t ~= 21
+                and t ~= 38
+                and t ~= 39
+                and t ~= 54
+                and t ~= 55
+        then
             -- normales Tile zerstören
             mset(nx, ny, 0)
             sfx(weapon_effects.grenade_shot.explosion_sound)  -- normaler Treffer
@@ -229,14 +197,13 @@ function make_hole(x, y)
     local ty = flr(y/8)
     local t = mget(tx, ty)
 
-    if t ~= BORDER_SPRITE_LEFT
-            and t ~= BORDER_SPRITE_RIGHT
-            and t ~= 4
+    if t ~= 4
             and t ~= 5
             and t ~= 10
             and t ~= 26
             and t ~= 20
-            and t ~= 21 then
+            and t ~= 21
+           then
         -- normales Tile zerstören
         mset(tx, ty, 0)
         sfx(weapon_effects.normal_shot.hit_sound)  -- normaler Treffer-Sound
@@ -246,12 +213,60 @@ function make_hole(x, y)
     end
 end
 
-function draw_fire_effect()
-    if weapon_effects.fire_effect_duration > 0 then
-        if player.current_sprite == PLAYER_SPRITE_RIGHT then
-            spr(FIRE_EFFECT_LEFT_RIGHT, player.x + 8, player.y)
-        else
-            spr(FIRE_EFFECT_LEFT_LEFT, player.x - 8, player.y)
+function check_is_boarder(x, y)
+    local tx = flr(x / 8)
+    local ty = flr(y / 8)
+    local t = mget(tx, ty)
+
+    -- Border-Sprites schützen
+    if t == 4
+            or t == 5
+            or t == 20
+            or t == 21 then
+        return true
+    end
+
+    return false
+end
+
+function check_shot_collision_at(x, y)
+    local tx = flr(x/8)
+    local ty = flr(y/8)
+
+    return mget(tx, ty) ~= 0
+end
+
+function handle_grenade_collision(shot)
+    local collision_x = shot.x + shot.direction * 2
+    local collision_y = shot.y
+
+    if check_shot_collision_at(collision_x, collision_y) then
+        if not check_is_boarder(collision_x, collision_y) then
+            make_cross_hole(collision_x, collision_y)
+            create_explosion(collision_x, collision_y)
+        end
+        shot.active = false
+    end
+end
+
+function handle_normal_shot_collision(shot)
+    -- Kollision prüfen
+    local collision_x = shot.x + shot.direction * 2
+    local collision_y = shot.y
+
+    if check_shot_collision_at(collision_x, collision_y) then
+        if not check_is_boarder(collision_x, collision_y) then
+            make_hole(collision_x, collision_y)
+        end
+        shot.active = false
+    end
+end
+
+function remove_inactive_shots()
+    for i = #shots, 1, -1 do
+        if not shots[i].active then
+            del(shots, shots[i])
         end
     end
+
 end
