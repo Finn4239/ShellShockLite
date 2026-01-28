@@ -63,6 +63,7 @@ end
 
 function update_parabolic_shot(shot)
     shot.time = shot.time + 1
+    shot.y = shot.y + GRAVITY
 
     local t = shot.time / shot.max_time
     local y_offset = -4 * shot.height * (t - 0.5)^2 + shot.height
