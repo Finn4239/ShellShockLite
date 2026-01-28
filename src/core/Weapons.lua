@@ -83,6 +83,7 @@ function update_normal_shot(shot)
     shot.x = shot.x + shot.speed * shot.direction
 
     if check_shot_collision(shot) then
+        check_is_boarder()
         make_hole(shot.x, shot.y)
         shot.active = false
     end
@@ -104,7 +105,7 @@ function draw_normal_shot(shot)
     if player.current_sprite == PLAYER_SPRITE_RIGHT then
         spr(NORMAL_SHOT_SPRITE_RIGHT, shot.x-2, shot.y)
     elseif player.current_sprite == PLAYER_SPRITE_LEFT then
-        spr(NORMAL_SHOT_SPRITE_LEFT, shot.x-6, shot.y+1)
+        spr(NORMAL_SHOT_SPRITE_LEFT, shot.x-6, shot.y)
     end
 end
 
@@ -186,4 +187,13 @@ function draw_fire_effect()
             spr(FIRE_EFFECT_LEFT_LEFT, player.x - 8, player.y)
         end
     end
+end
+
+
+--- Aufgabe Max ---
+--- Aktuell können Schüsse Boarders-Tiles zerstören
+--- Prüfen, ob der Schuss ein Border-Tile getroffen hat, wenn ja return
+--- Boarder Sprite sind BORDER_SPRITE_LEFT = 6 & BORDER_SPRITE_RIGHT = 7
+---
+function check_is_boarder()
 end

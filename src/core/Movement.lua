@@ -47,3 +47,33 @@ function move_player_horizontally(x_direction)
         end
     end
 end
+
+function jump()
+    if btnp(2) and is_player_on_ground() then
+        velocity_y = -JUMP_HEIGHT
+        sfx(02)
+    end
+end
+
+function get_vertical_direction(a)
+    if a < 0 then
+        return -1 -- move up
+    elseif a > 0 then
+        return 1 -- move down
+    else
+        return 0 -- no movement
+    end
+end
+
+function absolute_value(a) -- makes integer-/double-value positive
+    if a < 0 then return -a end
+
+    return a
+end
+
+function calculate_vertical_velocity()
+    velocity_y += GRAVITY
+    if velocity_y > MAX_FALL_SPEED then
+    velocity_y = MAX_FALL_SPEED
+    end
+end

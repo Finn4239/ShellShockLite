@@ -29,9 +29,12 @@ end
 -- Pico-8 Standard Functions
 function _update()
     update_title_screen()
-    reduce_timers()
-    calculate_vertical_velocity(MAX_FALL_SPEED)
     enable_driving_mode()
+    calculate_vertical_velocity(MAX_FALL_SPEED)
+    update_shots()
+    update_explosions()
+    reduce_timers()
+    update_camera()
 
     -- Waffenwechsel
     if btnp(4) then
@@ -45,11 +48,6 @@ function _update()
     if btnp(5) then
         shooting()
     end
-
-
-    update_explosions()
-    update_shots()
-    update_camera()
 end
 
 function _draw()
@@ -77,34 +75,11 @@ function update_title_screen()
     end
 end
 
-function get_vertical_direction(a)
-    if a < 0 then
-        return -1 -- move up
-    elseif a > 0 then
-        return 1 -- move down
-    else
-        return 0 -- no movement
-    end
-end
-
-function absolute_value(a) -- makes integer-/double-value positive
-    if a < 0 then return -a end
-
-    return a
-end
-
 function collision_at_position(player_x, player_y)
     local tank_x = flr(player_x / 8)
     local tank_y = flr(player_y / 8)
 
     return fget(mget(tank_x, tank_y), 0)
-end
-
-function calculate_vertical_velocity()
-    velocity_y += GRAVITY
-    if velocity_y > MAX_FALL_SPEED then
-    velocity_y = MAX_FALL_SPEED
-    end
 end
 
 function is_object_in_air(edge, y_direction)
@@ -116,13 +91,6 @@ function is_player_on_ground()
     local right_edge = player.x + 7
 
     return not is_object_in_air(left_edge, 1) or not is_object_in_air(right_edge, 1)
-end
-
-function jump()
-    if btnp(2) and is_player_on_ground() then
-        velocity_y = -JUMP_HEIGHT
-        sfx(02)
-    end
 end
 
 function enable_driving_mode()
@@ -171,11 +139,7 @@ function draw_game()
     cls(12)
     camera(camera_x, camera_y)
     map()
-    spr(BORDER_SPRITE, 8, 40)
-    spr(BORDER_SPRITE, 8, 32)
-    spr(BORDER_SPRITE, 8, 26)
     spr(player.current_sprite, player.x, player.y)
-
     draw_fire_effect()
     draw_shots()
     draw_explosions()
