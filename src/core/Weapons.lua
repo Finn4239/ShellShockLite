@@ -168,7 +168,6 @@ end
 function draw_explosions()
     for explosion in all(explosions) do
         spr(EXPLOSION_EFFECT_SPRITE, explosion.x - 4, explosion.y - 4)
-        sfx(00)
     end
 end
 
@@ -189,7 +188,6 @@ function make_cross_hole(x, y)
         local nx = tx + pos[1]
         local ny = ty + pos[2]
 
-        -- Nur zerstören, wenn kein Border
         local t = mget(nx, ny)
         if t ~= BORDER_SPRITE_LEFT
                 and t ~= BORDER_SPRITE_RIGHT
@@ -197,10 +195,16 @@ function make_cross_hole(x, y)
                 and t ~= 5
                 and t ~= 20
                 and t ~= 21 then
+            -- normales Tile zerstören
             mset(nx, ny, 0)
+            sfx(00)  -- normaler Treffer
+        else
+            -- Border getroffen → anderer Sound
+            sfx(06)
         end
     end
 end
+
 
 
 function damage_tile_at(x, y)
@@ -228,9 +232,15 @@ function make_hole(x, y)
             and t ~= 5
             and t ~= 20
             and t ~= 21 then
+        -- normales Tile zerstören
         mset(tx, ty, 0)
+        sfx(00)  -- normaler Treffer-Sound
+    else
+        -- Border getroffen → anderer Sound
+        sfx(06)
     end
 end
+
 
 
 function draw_fire_effect()
