@@ -196,6 +196,8 @@ function make_cross_hole(x, y)
                 and t ~= BORDER_SPRITE_RIGHT
                 and t ~= 4
                 and t ~= 5
+                and t ~= 10
+                and t ~= 26
                 and t ~= 20
                 and t ~= 21 then
             -- normales Tile zerstören
@@ -207,8 +209,6 @@ function make_cross_hole(x, y)
         end
     end
 end
-
-
 
 function damage_tile_at(x, y)
     local tx = flr(x/8)
@@ -233,6 +233,8 @@ function make_hole(x, y)
             and t ~= BORDER_SPRITE_RIGHT
             and t ~= 4
             and t ~= 5
+            and t ~= 10
+            and t ~= 26
             and t ~= 20
             and t ~= 21 then
         -- normales Tile zerstören
@@ -244,8 +246,6 @@ function make_hole(x, y)
     end
 end
 
-
-
 function draw_fire_effect()
     if weapon_effects.fire_effect_duration > 0 then
         if player.current_sprite == PLAYER_SPRITE_RIGHT then
@@ -255,11 +255,3 @@ function draw_fire_effect()
         end
     end
 end
-
-
---- Aufgabe Max ---
---- Aktuell können Schüsse Boarders-Tiles zerstören
---- Prüfen, ob der Schuss ein Border-Tile getroffen hat, wenn ja return
---- Boarder Sprite sind BORDER_SPRITE_LEFT = 6 & BORDER_SPRITE_RIGHT = 7
---- Falls Boarder entfernt werden, kann diese Funktion gelöscht werden
----
