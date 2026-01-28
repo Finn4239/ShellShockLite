@@ -65,11 +65,14 @@ function update_parabolic_shot(shot)
     shot.time = shot.time + 1
     shot.y = shot.y + GRAVITY
 
+    local vertex = 0.5 -- Scheitelpunkt der Parabel in der Mitte der Flugzeit
     local t = shot.time / shot.max_time
-    local y_offset = -4 * shot.height * (t - 0.5)^2 + shot.height
+    local parabola_strength = -3
+    local parabola_amplitude = parabola_strength * shot.height * (t - vertex)^2 + shot.height
+
 
     shot.x = shot.x + shot.speed * shot.direction
-    shot.y = shot.y - y_offset
+    shot.y = shot.y - parabola_amplitude
 
     if check_shot_collision(shot) then
         make_cross_hole(shot.x, shot.y) -- <-- Kreuz anstatt einzelnes Loch

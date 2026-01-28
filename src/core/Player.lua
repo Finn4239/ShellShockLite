@@ -1,5 +1,5 @@
 player = {
-    x = 24,
+    x = 32,
     y = 40,
     current_sprite = PLAYER_SPRITE_RIGHT;
     w = 8,
