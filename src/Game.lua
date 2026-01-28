@@ -1,4 +1,3 @@
-
 -- Shooting-Functions
 function shooting()
     if shooting_cooldown <= 0 and is_player_on_ground() then
@@ -29,32 +28,12 @@ end
 
 -- Pico-8 Standard Functions
 function _update()
-    if game_state == GAME_STATE.TITLE then
-        -- Slide the title down
-        if title_y < 40 then
-            title_y = title_y + title_speed
-        end
-
-        -- Start the game when any button is pressed
-        if btnp(4) then
-            game_state = GAME_STATE.PLAYING
-        end
-    end
-    -- Reduziere den Timer für den Feuereffekt
-    if weapon_effects.fire_effect_duration > 0 then
-        weapon_effects.fire_effect_duration -= 1
-    end
-    if shooting_cooldown > 0 then
-        shooting_cooldown -= 1
-    end
+    update_title_screen()
+    reduce_timers()
     calculate_vertical_velocity(MAX_FALL_SPEED)
-
     enable_driving_mode()
 
-    if btnp(5) then
-        shooting()
-    end
-
+    -- Waffenwechsel
     if btnp(4) then
         if weapons == "normal_shot" then
             weapons = "grenade_shot"
@@ -62,10 +41,14 @@ function _update()
             weapons = "normal_shot"
         end
     end
+    -- Schießen
+    if btnp(5) then
+        shooting()
+    end
+
 
     update_explosions()
     update_shots()
-
     update_camera()
 end
 
@@ -80,6 +63,20 @@ function _draw()
 end
 
 -- Help-Functions
+function update_title_screen()
+    if game_state == GAME_STATE.TITLE then
+        -- Slide the title down
+        if title_y < 40 then
+            title_y = title_y + title_speed
+        end
+
+        -- Start the game when any button is pressed
+        if btnp(4) then
+            game_state = GAME_STATE.PLAYING
+        end
+    end
+end
+
 function get_vertical_direction(a)
     if a < 0 then
         return -1 -- move up
@@ -136,6 +133,16 @@ function enable_driving_mode()
     end
 end
 
+function reduce_timers()
+    -- Reduziere den Timer für den Feuereffekt
+    if weapon_effects.fire_effect_duration > 0 then
+        weapon_effects.fire_effect_duration -= 1
+    end
+    if shooting_cooldown > 0 then
+        shooting_cooldown -= 1
+    end
+end
+
 function check_shot_collision(shot)
     local tx = flr((shot.x + 4) / 8)
     local ty = flr((shot.y + 4) / 8)
@@ -175,7 +182,6 @@ function draw_game()
 
     -- Kamera zurücksetzen, um UI-Elemente fest zu zeichnen
     camera(0, 0)
+
     print("x=" .. player.x .. " y=" .. player.y, 0, 0, 7)
-    print("Shoot_x startpoint: " .. shot_start_coords, 0, 7, 7)
-    print("Player Mode: " .. player_mode, 0, 14, 7)
 end

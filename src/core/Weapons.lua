@@ -1,3 +1,5 @@
+shots = {}
+explosions = {}
 weapons = {
     "normal_shot",
     "grenade_shot"
@@ -16,9 +18,7 @@ weapon_effects = {
 }
 
 -- Shooting
-shots = {}  -- Tabelle für alle Schüsse
 shooting_cooldown = 0
-shot_start_coords = 0 --only for debug info
 
 function create_shot(x, y, direction)
     local shot = {
@@ -113,7 +113,6 @@ function draw_grenade_shot(shot)
 end
 
 -- Explosion
-explosions = {}
 function create_explosion(x, y)
     add(explosions, {
         x = x,
@@ -188,7 +187,3 @@ function draw_fire_effect()
         end
     end
 end
-
-
-
-
