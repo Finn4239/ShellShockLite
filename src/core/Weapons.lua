@@ -20,6 +20,27 @@ weapon_effects = {
 -- Shooting
 shooting_cooldown = 0
 
+function check_is_boarder(x, y)
+    local tx = flr(x / 8)
+    local ty = flr(y / 8)
+    local t = mget(tx, ty)
+
+    -- Border-Sprites schützen
+    if t == BORDER_SPRITE_LEFT
+            or t == BORDER_SPRITE_RIGHT
+            or t == 4
+            or t == 5
+            or t == 20
+            or t == 21 then
+    return true
+    end
+
+    return false
+end
+
+
+
+
 function create_shot(x, y, direction)
     local shot = {
         x = x,
@@ -75,19 +96,29 @@ function update_parabolic_shot(shot)
     shot.y = shot.y - parabola_amplitude
 
     if check_shot_collision(shot) then
-        make_cross_hole(shot.x, shot.y) -- <-- Kreuz anstatt einzelnes Loch
+        -- Nur Kreuz erzeugen, wenn kein Border
+        if not check_is_boarder(shot.x, shot.y) then
+            make_cross_hole(shot.x, shot.y)
+            create_explosion(shot.x, shot.y)
+        end
+
+        -- Schuss in jedem Fall deaktivieren
         shot.active = false
-        create_explosion(shot.x, shot.y)
     end
 end
 
 function update_normal_shot(shot)
-
+    -- Schuss bewegen
     shot.x = shot.x + shot.speed * shot.direction
 
+    -- Kollision prüfen
     if check_shot_collision(shot) then
-        check_is_boarder()
-        make_hole(shot.x, shot.y)
+        -- Nur zerstören, wenn kein Border
+        if not check_is_boarder(shot.x, shot.y) then
+            make_hole(shot.x, shot.y)
+        end
+
+        -- Schuss wird in jedem Fall deaktiviert
         shot.active = false
     end
 end
@@ -137,12 +168,11 @@ end
 function draw_explosions()
     for explosion in all(explosions) do
         spr(EXPLOSION_EFFECT_SPRITE, explosion.x - 4, explosion.y - 4)
+        sfx(00)
     end
 end
 
--- Weapon Helpers
 function make_cross_hole(x, y)
-    -- x und y = Pixel-Koordinaten des Treffpunkts
     local tx = flr(x/8)
     local ty = flr(y/8)
 
@@ -158,9 +188,20 @@ function make_cross_hole(x, y)
     for pos in all(positions) do
         local nx = tx + pos[1]
         local ny = ty + pos[2]
-        mset(nx, ny, 0) -- 0 = Luft
+
+        -- Nur zerstören, wenn kein Border
+        local t = mget(nx, ny)
+        if t ~= BORDER_SPRITE_LEFT
+                and t ~= BORDER_SPRITE_RIGHT
+                and t ~= 4
+                and t ~= 5
+                and t ~= 20
+                and t ~= 21 then
+            mset(nx, ny, 0)
+        end
     end
 end
+
 
 function damage_tile_at(x, y)
     local tx = flr(x/8)
@@ -176,11 +217,21 @@ function damage_tile_at(x, y)
     end
 end
 
-function make_hole(x,y)
+function make_hole(x, y)
     local tx = flr(x/8)
     local ty = flr(y/8)
-    mset(tx,ty,0) -- 0 = Luft
+    local t = mget(tx, ty)
+
+    if t ~= BORDER_SPRITE_LEFT
+            and t ~= BORDER_SPRITE_RIGHT
+            and t ~= 4
+            and t ~= 5
+            and t ~= 20
+            and t ~= 21 then
+        mset(tx, ty, 0)
+    end
 end
+
 
 function draw_fire_effect()
     if weapon_effects.fire_effect_duration > 0 then
@@ -199,5 +250,3 @@ end
 --- Boarder Sprite sind BORDER_SPRITE_LEFT = 6 & BORDER_SPRITE_RIGHT = 7
 --- Falls Boarder entfernt werden, kann diese Funktion gelöscht werden
 ---
-function check_is_boarder()
-end
