@@ -156,10 +156,9 @@ function make_cross_hole(x, y)
         local t = mget(nx, ny)
 
         if t ~= 4 and t ~= 5 and t ~= 10 and t ~= 26 and t ~= 20 and t ~= 21
-        then -- normales Tile zerstören
+                and not fget(t, BACKGROUND_OBJECTS) then -- normales Tile zerstören
             mset(nx, ny, 0)
             sfx(weapon_effects.grenade_shot.explosion_sound)
-            sfx(6)
         end
     end
 end
@@ -191,14 +190,12 @@ function check_is_boarder(x, y)
     return false
 end
 
-
-
 function check_shot_collision_at(x, y)
     local tx = flr(x / 8)
     local ty = flr(y / 8)
     local tile = mget(tx, ty)
 
-    -- Ignoriere Tiles mit Flag 2 (Hintergrund Objekte)
+    -- Ignoriert Tiles mit Flag 2 (Hintergrund Objekte)
     if tile == 0 or fget(tile, BACKGROUND_OBJECTS) then
         return false
     end

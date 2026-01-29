@@ -76,16 +76,6 @@ function _draw()
 end
 
 -- Help-Functions
-function change_weapon_type()
-    if btnp(4) then
-        if weapon_type == "normal_shot" then
-            weapon_type = "grenade_shot"
-        else
-            weapon_type = "normal_shot"
-        end
-    end
-end
-
 function update_title_screen()
     if game_state == GAME_STATE.TITLE then
         -- Slide the title down
@@ -175,3 +165,14 @@ function draw_game()
     spr(current_sprite, 48, 10)
     draw_health_bar(player.hp, player.max_hp, 1, 2, 40, 6)
 end
+
+function change_weapon_type()
+    if btnp(4) then
+        if weapon_type == "normal_shot" then
+            weapon_type = "grenade_shot"
+        else
+            weapon_type = "normal_shot"
+        end
+    end
+end
+
