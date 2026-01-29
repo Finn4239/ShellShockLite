@@ -3,9 +3,6 @@ GRAVITY = 0.3
 MAX_FALL_SPEED = 3
 JUMP_HEIGHT = 4
 
--- tiles
-BACKGROUND_OBJECTS = 2
-
 --Player
 PLAYER_SPAWN_X = 24
 PLAYER_SPAWN_Y = 40
@@ -14,7 +11,6 @@ PLAYER_SPEED = 1.0 --(0.1-1.2 -  Standard: 1.0)
 
 -- Enemy
 ENEMY_MAX_HP = 250
-
 
 
 

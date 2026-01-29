@@ -5,7 +5,8 @@ MAP_HEIGHT = 30*8
 -- Title Screen Variables
 title_y = -20 -- Initial Y position of the title
 title_speed = 1 -- Speed of the title sliding down
-
+-- tiles
+BACKGROUND_OBJECTS = 2
 -- Game State
 GAME_STATE = {
     TITLE = "title",
@@ -57,15 +58,8 @@ function _update()
     reduce_timers()
     update_camera()
 
-    -- Waffenwechsel
-    if btnp(4) then
-        if weapon_type == "normal_shot" then
-            weapon_type = "grenade_shot"
-        else
-            weapon_type = "normal_shot"
-        end
-    end
-    -- Schießen
+    change_weapon_type()
+
     if btnp(5) then
         shooting(weapon_type)
     end
@@ -82,6 +76,16 @@ function _draw()
 end
 
 -- Help-Functions
+function change_weapon_type()
+    if btnp(4) then
+        if weapon_type == "normal_shot" then
+            weapon_type = "grenade_shot"
+        else
+            weapon_type = "normal_shot"
+        end
+    end
+end
+
 function update_title_screen()
     if game_state == GAME_STATE.TITLE then
         -- Slide the title down
