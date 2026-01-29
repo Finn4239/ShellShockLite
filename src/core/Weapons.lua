@@ -1,6 +1,6 @@
 shots = {}
 explosions = {}
-weapon_type = {
+weapon_types = {
     "normal_shot",
     "grenade_shot"
 }
