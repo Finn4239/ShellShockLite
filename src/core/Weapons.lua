@@ -32,7 +32,6 @@ function create_shot(type, x, y, direction)
         height = 3, -- Standard value: 3
         speed = 2 -- Standard value: 2
     }
-    shot_start_coords = x
     add(shots, shot)
 end
 
