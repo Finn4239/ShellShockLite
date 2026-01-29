@@ -179,27 +179,32 @@ function make_hole(x, y)
     end
 end
 
-function check_is_boarder(x, y, shot)
+function check_is_boarder(x, y)
     local tx = flr(x / 8)
     local ty = flr(y / 8)
-    local t = mget(tx, ty)
+    local tile = mget(tx, ty)
 
-    -- Border-Sprites schützen
-    if t == 4 or t == 5
-            or t == 20 or t == 21 then
-
+    -- Border-Sprites schützen, aber Flag 2 (Hintergrund Objekte) ignorieren
+    if (tile == 4 or tile == 5 or tile == 20 or tile == 21) and not fget(tile, BACKGROUND_OBJECTS) then
         return true
     end
-
     return false
 end
 
-function check_shot_collision_at(x, y)
-    local tx = flr(x/8)
-    local ty = flr(y/8)
 
-    return mget(tx, ty) ~= 0
+
+function check_shot_collision_at(x, y)
+    local tx = flr(x / 8)
+    local ty = flr(y / 8)
+    local tile = mget(tx, ty)
+
+    -- Ignoriere Tiles mit Flag 2 (Hintergrund Objekte)
+    if tile == 0 or fget(tile, BACKGROUND_OBJECTS) then
+        return false
+    end
+    return true
 end
+
 
 function handle_grenade_collision(shot)
     local collision_x = shot.x + shot.direction * 2
@@ -239,5 +244,6 @@ end
 function check_shot_collision(shot)
     local tx = flr((shot.x + 4) / 8)
     local ty = flr((shot.y + 4) / 8)
+
     return fget(mget(tx, ty), 0)
 end

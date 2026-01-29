@@ -30,5 +30,9 @@ PLAYER_MODE = {
 title_y = -20 -- Initial Y position of the title
 title_speed = 1 -- Speed of the title sliding down
 
+-- tiles
+BACKGROUND_OBJECTS = 2
+
+
 
 
