@@ -4,7 +4,8 @@ player = {
     current_sprite = PLAYER_SPRITE_RIGHT;
     w = 8,
     h = 8,
-    health = 200,
+    hp = 200,
+    max_hp = 200,
     dx = 0, -- Player velocity X
     dy = 0  -- Player velocity Y
 }

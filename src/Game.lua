@@ -146,6 +146,8 @@ function draw_game()
     end
 
     --print("x=" .. player.x .. " y=" .. player.y, 0, 0, 7)
-    print("weapon-type: ", 1, 2, 7)
-    spr(current_sprite, 48, 0)
+    print("weapon-type: ", 1, 12, 7)
+    print("press c to change weapon-type", 1, 120, 6)
+    spr(current_sprite, 48, 10)
+    draw_health_bar(player.hp, player.max_hp, 1, 2, 40, 6)
 end

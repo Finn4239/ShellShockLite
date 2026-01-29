@@ -9,7 +9,7 @@ __lua__
 #include src/core/Config.lua
 #include src/core/Camera.lua
 #include src/core/Movement.lua
--- #include src/core/hud/Healthbar.lua
+#include src/core/hud/Healthbar.lua
 
 -- Initialize game state & player mode
 game_state = GAME_STATE.TITLE
