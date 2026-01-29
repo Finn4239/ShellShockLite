@@ -2,6 +2,9 @@ camera_x = 0
 camera_y = 0
 camera_threshold_x = 1  -- Wie nah der Spieler am Bildschirmrand sein muss, bevor die Kamera scrollt
 camera_threshold_y = 25
+-- Screen dimensions
+SCREEN_WIDTH = 128
+SCREEN_HEIGHT = 128
 
 -- Camera-Functions
 function update_camera()

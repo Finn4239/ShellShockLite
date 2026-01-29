@@ -1,3 +1,23 @@
+-- Map dimensions
+MAP_WIDTH = 128*8
+MAP_HEIGHT = 30*8
+
+-- Title Screen Variables
+title_y = -20 -- Initial Y position of the title
+title_speed = 1 -- Speed of the title sliding down
+
+-- Game State
+GAME_STATE = {
+    TITLE = "title",
+    PLAYING = "playing",
+    GAME_OVER = "game_over"
+}
+-- Player Mode
+PLAYER_MODE = {
+    DRIVING = "driving",
+    SHOOTING = "shooting"
+}
+
 -- Shooting-Functions
 function shooting(type)
     if shooting_cooldown <= 0 and is_player_on_ground() then

@@ -1,3 +1,6 @@
+-- Velocity
+velocity_y = 0
+
 -- Movement-Functions
 function apply_vertical_movement()
     local y_direction = get_vertical_direction(velocity_y)
@@ -39,11 +42,11 @@ end
 function move_player_horizontally(x_direction)
     if x_direction > 0 then -- right
         if not collision_at_position(player.x + x_direction * 8, player.y + 4) then
-            player.x += x_direction
+            player.x += x_direction * player.speed
         end
     else --left
         if not collision_at_position(player.x + x_direction, player.y + 4) then
-            player.x += x_direction
+            player.x += x_direction * player.speed
         end
     end
 end

@@ -2,11 +2,11 @@ pico-8 cartridge // http://www.pico-8.com
 version 43
 __lua__
 
+#include src/core/Config.lua
 #include src/Game.lua
 #include src/core/Sprites.lua
 #include src/core/Weapons.lua
 #include src/core/Player.lua
-#include src/core/Config.lua
 #include src/core/Camera.lua
 #include src/core/Movement.lua
 #include src/core/hud/Healthbar.lua
