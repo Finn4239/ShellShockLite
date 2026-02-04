@@ -30,7 +30,8 @@ function create_shot(type, x, y, direction)
         time = 0,
         max_time = 30, -- Standard value: 30
         height = 3, -- Standard value: 3
-        speed = 2 -- Standard value: 2
+        speed = 1, -- Standard value: 2
+        damage = PLAYER_DAMAGE -- Standard value: 25
     }
     add(shots, shot)
 end
@@ -208,6 +209,9 @@ function handle_grenade_collision(shot)
     local collision_y = shot.y
 
     if check_shot_collision_at(collision_x, collision_y) then
+        if was_player_hit() then
+            player.hp -= (shot.damage + 10)
+        end
         if not check_is_boarder(collision_x, collision_y, shot.direction) then
             make_cross_hole(collision_x, collision_y)
             create_explosion(collision_x, collision_y)
@@ -222,11 +226,33 @@ function handle_normal_shot_collision(shot)
     local collision_y = shot.y
 
     if check_shot_collision_at(collision_x, collision_y) then
+        if was_player_hit() then
+            player.hp -= shot.damage
+            shot.active = false
+            return
+        end
         if not check_is_boarder(collision_x, collision_y, shot.direction) then
             make_hole(collision_x, collision_y)
         end
         shot.active = false
     end
+end
+
+function was_player_hit()
+    local px = player.x
+    local py = player.y
+    local pw = player.w
+    local ph = player.h
+
+    for shot in all(shots) do
+        if shot.active and
+                shot.x + 1 > px and shot.x < px + pw and
+                shot.y + 1 > py and shot.y < py + ph then
+            return true
+        end
+    end
+
+    return false
 end
 
 function remove_inactive_shots()
