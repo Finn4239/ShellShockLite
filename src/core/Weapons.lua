@@ -229,6 +229,7 @@ function handle_normal_shot_collision(shot)
         if was_player_hit() then
             player.hp -= shot.damage
             shot.active = false
+
             return
         end
         if not check_is_boarder(collision_x, collision_y, shot.direction) then
@@ -237,6 +238,7 @@ function handle_normal_shot_collision(shot)
         shot.active = false
     end
 end
+
 
 function was_player_hit()
     local px = player.x

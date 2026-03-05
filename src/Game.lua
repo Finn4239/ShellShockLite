@@ -1,6 +1,6 @@
 -- Map dimensions
-MAP_WIDTH = 128*8
-MAP_HEIGHT = 30*8
+MAP_WIDTH = 128 * 8
+MAP_HEIGHT = 30 * 8
 
 -- Title Screen Variables
 title_y = -20 -- Initial Y position of the title
@@ -63,6 +63,14 @@ function _update()
     if btnp(5) then
         shooting(weapon_type)
     end
+    is_player_dead()
+    if game_state == GAME_STATE.GAME_OVER then
+        if btn(4) then
+            resetGame()
+            game_state = GAME_STATE.TITLE
+            draw_title_screen()
+        end
+    end
 end
 
 function _draw()
@@ -72,8 +80,11 @@ function _draw()
         draw_title_screen()
     elseif game_state == GAME_STATE.PLAYING then
         draw_game()
+    elseif game_state == GAME_STATE.GAME_OVER then
+        draw_game_over_screen()
     end
 end
+
 
 -- Help-Functions
 function update_title_screen()
@@ -87,6 +98,7 @@ function update_title_screen()
             game_state = GAME_STATE.PLAYING
         end
     end
+
 end
 
 function collision_at_position(player_x, player_y)
@@ -107,6 +119,12 @@ function is_player_on_ground()
     return not is_object_in_air(left_edge, 1) or not is_object_in_air(right_edge, 1)
 end
 
+function is_player_dead()
+    if player.hp <= 0 then
+        game_state = GAME_STATE.GAME_OVER
+    end
+end
+
 function enable_driving_mode()
     if player_mode == PLAYER_MODE.DRIVING then
         apply_vertical_movement()
@@ -125,18 +143,22 @@ function reduce_timers()
 end
 
 function draw_title_screen()
-    draw_long_sprite(SCREEN_WIDTH/4, title_y)
+    draw_long_sprite(64, SCREEN_WIDTH / 4, title_y, 6)
 
     if title_y >= 40 then
-        print("Press c to begin", (SCREEN_WIDTH/4)-2, 80, 7)
+        print("Press c to begin", (SCREEN_WIDTH / 4) - 2, 80, 7)
     end
 end
 
-function draw_long_sprite(x, y)
-    local sprite = 64
-    for i = 0, 6 do
-        spr(sprite + i, x + (i*8), y)
+function draw_long_sprite(sprite, x, y, length)
+    for i = 0, length do
+        spr(sprite + i, x + (i * 8), y)
     end
+end
+
+function draw_game_over_screen()
+    draw_long_sprite(80, SCREEN_WIDTH / 4, -20, 4)
+    print("Press c to replay", (SCREEN_WIDTH / 4) - 2, 80, 7)
 end
 
 function draw_game()
@@ -176,4 +198,3 @@ function change_weapon_type()
         end
     end
 end
-
