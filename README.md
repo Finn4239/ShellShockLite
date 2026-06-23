@@ -1,4 +1,4 @@
-# [ShellShockLite]
+# ShellShockLite
 
 A game made in **Pico-8** (Fantasy Console).
 The game was programmed as a part of a project for the university course Game Design & Development and isn't finished yet. 
@@ -8,7 +8,7 @@ The game is a 2D platformer with shooting mechanics and destructible terrain.
 ## 🎮 **How to Play**
 
 ### Controls
-- **↑↓← → (Arrow Keys)**: Move
+- **⬆️ ⬇️ ⬅️ ➡️ (Arrow Keys)**: Move
 - **X**: Shoot
 - **C**: Change weapon (Normal Shot / Grenade Shot)
 
