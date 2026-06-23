@@ -12,10 +12,6 @@ The game is a 2D platformer with shooting mechanics and destructible terrain.
 - **X**: Shoot
 - **C**: Change weapon (Normal Shot / Grenade Shot)
 
-### Objective
-
----
-
 ## ⚙️ **Features**
 - Two weapon types: Normal Shot and Grenade Shot
 - Destructible terrain
@@ -25,7 +21,8 @@ The game is a 2D platformer with shooting mechanics and destructible terrain.
 ---
 
 ## 📦 **How to Run**
-
+Try the game directly in your browser:
+[Play Demo](https://Finn4239.github.io/ShellShockLite/)
 ---
 
 ## 🛠️ **Configuration**
